@@ -1,0 +1,15 @@
+1. Open phpMyAdmin.
+2. Import libratrack_mysql.sql.
+3. Make sure MySQL username/password in app.py or environment variables match your XAMPP/WAMP setup.
+4. Install Python packages:
+   pip install -r requirements.txt
+5. Run:
+   python app.py
+6. Open:
+   http://127.0.0.1:5000
+7. Login with:
+   username: maye
+   password: 123456
+
+Environment variables supported:
+DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, SECRET_KEY

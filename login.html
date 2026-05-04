@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIBRATRACK Login</title>
+<style>
+:root{
+    --green-950:#072916;
+    --green-900:#0f4d2e;
+    --green-800:#165c39;
+    --green-700:#1f7a47;
+    --green-600:#2f9e44;
+    --green-500:#3fbf5a;
+    --mint-100:#ebfff0;
+    --slate-950:#0f172a;
+    --slate-800:#1e293b;
+    --slate-700:#334155;
+    --slate-600:#475569;
+    --slate-500:#64748b;
+    --slate-400:#94a3b8;
+    --slate-300:#cbd5e1;
+    --slate-200:#e2e8f0;
+    --slate-100:#f1f5f9;
+    --white:#ffffff;
+    --danger:#b42318;
+    --danger-bg:#fef3f2;
+    --danger-border:#fecdca;
+    --success:#067647;
+    --success-bg:#ecfdf3;
+    --success-border:#abefc6;
+    --info:#175cd3;
+    --info-bg:#eff8ff;
+    --info-border:#b2ddff;
+    --shadow-xl:0 30px 80px rgba(15,23,42,.22);
+    --shadow-lg:0 22px 46px rgba(15,23,42,.14);
+    --shadow-md:0 14px 30px rgba(15,23,42,.10);
+    --radius-xl:30px;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:12px;
+    --transition-fast:180ms ease;
+    --transition-smooth:320ms cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+    min-height:100vh;
+    font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+    color:var(--slate-950);
+    background:
+        radial-gradient(circle at 8% 12%, rgba(63,191,90,.18), transparent 28%),
+        radial-gradient(circle at 88% 18%, rgba(59,130,246,.16), transparent 26%),
+        radial-gradient(circle at 84% 86%, rgba(16,185,129,.15), transparent 24%),
+        linear-gradient(135deg, #eef7f1 0%, #f6fbff 46%, #eff5fb 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+    overflow-x:hidden;
+    position:relative;
+}
+body::before,
+body::after{
+    content:'';
+    position:fixed;
+    width:360px;
+    height:360px;
+    border-radius:50%;
+    filter:blur(72px);
+    opacity:.38;
+    pointer-events:none;
+    z-index:0;
+    animation:orbFloat 16s ease-in-out infinite;
+}
+body::before{
+    top:-120px;
+    left:-100px;
+    background:radial-gradient(circle, rgba(34,197,94,.46), rgba(34,197,94,0));
+}
+body::after{
+    right:-110px;
+    bottom:-120px;
+    background:radial-gradient(circle, rgba(59,130,246,.34), rgba(59,130,246,0));
+    animation-delay:-7s;
+}
+.shell{
+    position:relative;
+    z-index:1;
+    width:min(1120px, 100%);
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    background:rgba(255,255,255,.7);
+    border:1px solid rgba(255,255,255,.65);
+    border-radius:var(--radius-xl);
+    overflow:hidden;
+    box-shadow:var(--shadow-xl);
+    backdrop-filter:blur(18px);
+    animation:shellReveal .7s var(--transition-smooth) both;
+}
+.hero-panel,
+.form-panel{position:relative}
+.hero-panel{
+    background:
+        linear-gradient(145deg, rgba(7,41,22,.96), rgba(15,77,46,.94) 36%, rgba(23,102,72,.92) 100%);
+    color:var(--white);
+    padding:42px 42px 38px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:28px;
+    overflow:hidden;
+}
+.hero-panel::before{
+    content:'';
+    position:absolute;
+    inset:-15% auto auto -12%;
+    width:320px;
+    height:320px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.16), transparent 72%);
+    animation:haloSpin 18s linear infinite;
+}
+.hero-panel::after{
+    content:'';
+    position:absolute;
+    right:-80px;
+    bottom:-100px;
+    width:280px;
+    height:280px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(126,230,154,.18), transparent 70%);
+}
+.hero-content,
+.panel-header,
+.notice,
+.demo-card,
+.footer-row,
+.form-panel form{position:relative;z-index:1}
+.brand-lockup{
+    display:flex;
+    align-items:flex-start;
+    gap:20px;
+}
+.brand-logo{
+    width:96px;
+    height:96px;
+    object-fit:contain;
+    display:block;
+    filter:drop-shadow(0 12px 20px rgba(0,0,0,.22));
+    animation:floatSoft 5.5s ease-in-out infinite;
+}
+.brand-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.16);
+    color:rgba(255,255,255,.92);
+    font-size:.78rem;
+    font-weight:700;
+    letter-spacing:.35px;
+    text-transform:uppercase;
+    margin-bottom:14px;
+    backdrop-filter:blur(6px);
+}
+.brand-chip::before{
+    content:'';
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#86efac;
+    box-shadow:0 0 0 6px rgba(134,239,172,.14);
+}
+.hero-panel h1{
+    margin:0;
+    font-size:clamp(2.2rem, 4vw, 3.5rem);
+    line-height:1;
+    letter-spacing:-1.6px;
+    font-weight:900;
+}
+.hero-panel h1 span{color:#8df0a7}
+.hero-subtitle{
+    margin:12px 0 0;
+    color:rgba(255,255,255,.82);
+    font-size:1rem;
+    line-height:1.6;
+    max-width:520px;
+}
+.hero-copy h2{
+    margin:0 0 12px;
+    font-size:1.35rem;
+    font-weight:800;
+    letter-spacing:-.3px;
+}
+.hero-copy p{
+    margin:0;
+    color:rgba(255,255,255,.85);
+    line-height:1.7;
+    max-width:540px;
+}
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:14px;
+}
+.feature-card{
+    padding:16px;
+    border-radius:18px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(8px);
+    box-shadow:0 12px 24px rgba(0,0,0,.08);
+    transition:transform var(--transition-smooth), background var(--transition-smooth), border-color var(--transition-fast);
+}
+.feature-card:hover{
+    transform:translateY(-4px);
+    background:rgba(255,255,255,.12);
+    border-color:rgba(255,255,255,.18);
+}
+.feature-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.12);
+    font-size:1.15rem;
+    margin-bottom:12px;
+}
+.feature-card strong{
+    display:block;
+    font-size:.98rem;
+    margin-bottom:6px;
+}
+.feature-card span{
+    display:block;
+    color:rgba(255,255,255,.78);
+    font-size:.92rem;
+    line-height:1.55;
+}
+.hero-note{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    width:fit-content;
+    padding:12px 16px;
+    border-radius:16px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.14);
+    color:rgba(255,255,255,.88);
+    font-size:.92rem;
+    backdrop-filter:blur(8px);
+}
+.pulse-dot{
+    width:11px;
+    height:11px;
+    border-radius:50%;
+    background:#8df0a7;
+    box-shadow:0 0 0 0 rgba(141,240,167,.45);
+    animation:pulseDot 2.1s ease-in-out infinite;
+}
+.form-panel{
+    padding:44px 40px 34px;
+    background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.97));
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+.panel-header{margin-bottom:26px}
+.eyebrow{
+    margin:0 0 8px;
+    color:var(--green-700);
+    font-size:.88rem;
+    font-weight:800;
+    letter-spacing:.35px;
+    text-transform:uppercase;
+}
+.panel-header h2{
+    margin:0;
+    font-size:clamp(1.9rem, 4vw, 2.5rem);
+    line-height:1.08;
+    letter-spacing:-1px;
+}
+.panel-text{
+    margin:12px 0 0;
+    color:var(--slate-600);
+    line-height:1.7;
+}
+form{display:grid;gap:18px}
+.field{display:grid;gap:10px}
+.label-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+}
+label{
+    font-size:.9rem;
+    font-weight:700;
+    color:var(--slate-700);
+}
+.field-shell{
+    position:relative;
+    display:flex;
+    align-items:center;
+    border:1.5px solid var(--slate-200);
+    background:var(--white);
+    border-radius:16px;
+    min-height:58px;
+    transition:border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast), background var(--transition-fast);
+    box-shadow:0 8px 18px rgba(15,23,42,.04);
+}
+.field-shell:focus-within{
+    border-color:#6cd78a;
+    box-shadow:0 0 0 5px rgba(63,191,90,.12), 0 16px 28px rgba(15,23,42,.08);
+    transform:translateY(-1px);
+}
+.field-icon{
+    flex:0 0 auto;
+    width:52px;
+    display:grid;
+    place-items:center;
+    font-size:1rem;
+    color:var(--slate-500);
+}
+.field-shell input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    font-size:1rem;
+    color:var(--slate-950);
+    padding:18px 16px 18px 0;
+}
+.field-shell input::placeholder{color:var(--slate-400)}
+.icon-button,
+.link-button,
+.ghost-button,
+.primary-btn{
+    font:inherit;
+    border:none;
+    cursor:pointer;
+    transition:transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+}
+.icon-button{
+    flex:0 0 auto;
+    height:42px;
+    margin-right:8px;
+    padding:0 12px;
+    border-radius:12px;
+    background:transparent;
+    color:var(--green-700);
+    font-weight:700;
+}
+.icon-button:hover{background:var(--slate-100)}
+.icon-button:focus-visible,
+.link-button:focus-visible,
+.ghost-button:focus-visible,
+.primary-btn:focus-visible{
+    outline:3px solid rgba(59,130,246,.18);
+    outline-offset:2px;
+}
+.helper-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    min-height:20px;
+}
+.helper-text,
+.caps-hint{
+    font-size:.82rem;
+    line-height:1.4;
+}
+.helper-text{color:var(--slate-500)}
+.caps-hint{color:var(--danger);font-weight:700}
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+}
+.checkbox{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    color:var(--slate-600);
+    font-size:.92rem;
+    font-weight:600;
+    cursor:pointer;
+}
+.checkbox input{
+    inline-size:18px;
+    block-size:18px;
+    accent-color:var(--green-700);
+}
+.link-button{
+    padding:0;
+    background:none;
+    color:var(--green-700);
+    font-weight:700;
+}
+.link-button:hover,
+.ghost-button:hover{text-decoration:underline}
+.ghost-button{
+    position:relative;
+    overflow:hidden;
+    padding:11px 14px;
+    border-radius:14px;
+    background:var(--mint-100);
+    color:var(--green-800);
+    font-weight:800;
+    box-shadow:0 10px 18px rgba(15,23,42,.05);
+}
+.ghost-button.compact{padding:10px 12px;font-size:.9rem}
+.primary-btn{
+    position:relative;
+    overflow:hidden;
+    width:100%;
+    min-height:58px;
+    padding:16px 18px;
+    border-radius:16px;
+    color:var(--white);
+    font-size:1rem;
+    font-weight:800;
+    letter-spacing:.25px;
+    background:linear-gradient(135deg, var(--green-700), var(--green-600));
+    box-shadow:0 18px 30px rgba(31,122,71,.24);
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+}
+.primary-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 22px 34px rgba(31,122,71,.28);
+}
+.primary-btn:active,
+.ghost-button:active,
+.icon-button:active{
+    transform:translateY(0) scale(.98);
+}
+.primary-btn::before,
+.ghost-button::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(110deg, transparent 18%, rgba(255,255,255,.24) 50%, transparent 82%);
+    transform:translateX(-140%) skewX(-18deg);
+    pointer-events:none;
+}
+.primary-btn:hover::before,
+.ghost-button:hover::before{animation:shine .9s ease}
+.primary-btn.loading{pointer-events:none;opacity:.96}
+.primary-btn.loading .btn-text{transform:translateY(.5px)}
+.spinner{
+    display:none;
+    width:18px;
+    height:18px;
+    border:2.5px solid rgba(255,255,255,.32);
+    border-top-color:#ffffff;
+    border-radius:50%;
+    animation:spin .75s linear infinite;
+}
+.primary-btn.loading .spinner{display:inline-block}
+.notice{
+    opacity:0;
+    transform:translateY(10px);
+    max-height:0;
+    overflow:hidden;
+    padding:0 16px;
+    border-radius:16px;
+    border:1px solid transparent;
+    font-size:.94rem;
+    line-height:1.55;
+    font-weight:700;
+    transition:opacity var(--transition-fast), transform var(--transition-fast), max-height var(--transition-fast), padding var(--transition-fast), margin var(--transition-fast);
+}
+.notice.visible{
+    opacity:1;
+    transform:translateY(0);
+    max-height:160px;
+    padding:14px 16px;
+    margin-top:2px;
+}
+.notice.error{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger)}
+.notice.success{background:var(--success-bg);border-color:var(--success-border);color:var(--success)}
+.notice.info{background:var(--info-bg);border-color:var(--info-border);color:var(--info)}
+.demo-card{
+    margin-top:18px;
+    padding:16px;
+    border-radius:18px;
+    border:1px solid var(--slate-200);
+    background:linear-gradient(180deg, rgba(248,250,252,.95), rgba(255,255,255,1));
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+}
+.demo-meta strong{
+    display:block;
+    margin-bottom:6px;
+    color:var(--slate-800);
+}
+.demo-meta span{
+    color:var(--slate-600);
+    font-size:.92rem;
+}
+.footer-row{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--slate-200);
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    color:var(--slate-500);
+    font-size:.86rem;
+}
+.footer-status{font-weight:700;color:var(--green-700)}
+.ripple{
+    position:absolute;
+    border-radius:50%;
+    transform:translate(-50%, -50%) scale(0);
+    background:rgba(255,255,255,.34);
+    pointer-events:none;
+    animation:ripple .65s ease-out forwards;
+}
+body.success-mode .shell{
+    box-shadow:0 34px 90px rgba(6,118,71,.24);
+}
+@media (max-width: 980px){
+    body{padding:18px}
+    .shell{grid-template-columns:1fr}
+    .hero-panel{padding:34px 28px 26px}
+    .form-panel{padding:34px 28px 30px}
+    .feature-grid{grid-template-columns:repeat(3, minmax(0, 1fr))}
+}
+@media (max-width: 760px){
+    body{display:block;padding:14px;overflow:auto}
+    .shell{margin:0 auto;border-radius:24px}
+    .brand-lockup{flex-direction:column;gap:16px}
+    .brand-logo{width:84px;height:84px}
+    .feature-grid{grid-template-columns:1fr}
+    .toolbar,
+    .helper-row,
+    .demo-card,
+    .footer-row{align-items:stretch}
+    .toolbar,
+    .helper-row,
+    .demo-card,
+    .footer-row{flex-direction:column}
+    .ghost-button,
+    .primary-btn{width:100%}
+}
+@media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+        scroll-behavior:auto !important;
+    }
+}
+@keyframes shellReveal{
+    from{opacity:0;transform:translateY(18px) scale(.985)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes orbFloat{
+    0%,100%{transform:translate3d(0,0,0) scale(1)}
+    50%{transform:translate3d(26px,-18px,0) scale(1.08)}
+}
+@keyframes haloSpin{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+}
+@keyframes floatSoft{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+}
+@keyframes shine{
+    0%{transform:translateX(-140%) skewX(-18deg)}
+    100%{transform:translateX(220%) skewX(-18deg)}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulseDot{
+    0%{box-shadow:0 0 0 0 rgba(141,240,167,.46)}
+    70%{box-shadow:0 0 0 10px rgba(141,240,167,0)}
+    100%{box-shadow:0 0 0 0 rgba(141,240,167,0)}
+}
+@keyframes ripple{
+    to{transform:translate(-50%, -50%) scale(5);opacity:0}
+}
+</style>
+</head>
+<body>
+<main class="shell" aria-label="Libratrack login screen">
+    <section class="hero-panel">
+        <div class="hero-content">
+            <div class="brand-lockup">
+                <img class="brand-logo" src="data:image/png;base64,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" alt="Libratrack Logo">
+                <div>
+                    <div class="brand-chip">Colegio de Montalban Library Portal</div>
+                    <h1>LIBRA<span>TRACK</span></h1>
+                    <p class="hero-subtitle">A smoother and more user-friendly login page for attendance, borrowing, and library account access.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-copy">
+            <h2>Everything important stays within reach</h2>
+            <p>Sign in faster, see clearer feedback, and access the Libratrack dashboard from a layout that feels cleaner on desktop and mobile.</p>
+        </div>
+
+        <div class="feature-grid" aria-label="Key features">
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">📘</div>
+                <strong>Book Access</strong>
+                <span>Open borrowing records and library activity from one organized workspace.</span>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🪪</div>
+                <strong>Attendance Ready</strong>
+                <span>Move quickly from login to student attendance and monitoring tools.</span>
+            </article>
+            <article class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🔐</div>
+                <strong>Helpful Feedback</strong>
+                <span>See clearer states for success, errors, demo access, and password visibility.</span>
+            </article>
+        </div>
+
+        <div class="hero-note">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span id="heroClock">System ready</span>
+        </div>
+    </section>
+
+    <section class="form-panel">
+        <div class="panel-header">
+            <p class="eyebrow" id="greeting">Welcome back</p>
+            <h2>Sign in to continue</h2>
+            <p class="panel-text">Use your Libratrack account credentials to open the dashboard securely.</p>
+        </div>
+
+        <form id="loginForm" novalidate>
+            <div class="field">
+                <label for="username">Username</label>
+                <div class="field-shell">
+                    <span class="field-icon" aria-hidden="true">👤</span>
+                    <input type="text" id="username" placeholder="Enter your username" required autocomplete="username" inputmode="text">
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label-row">
+                    <label for="password">Password</label>
+                    <button type="button" class="link-button" id="forgotPasswordBtn">Need help?</button>
+                </div>
+                <div class="field-shell">
+                    <span class="field-icon" aria-hidden="true">🔒</span>
+                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                    <button type="button" class="icon-button" id="togglePassword" aria-label="Show password" title="Show password">
+                        <span id="togglePasswordLabel">Show</span>
+                    </button>
+                </div>
+                <div class="helper-row">
+                    <span class="caps-hint" id="capsHint" hidden>Caps Lock is on.</span>
+                    <span class="helper-text">Only the username can be remembered on this device.</span>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <label class="checkbox" for="rememberMe">
+                    <input type="checkbox" id="rememberMe">
+                    <span>Remember username on this device</span>
+                </label>
+                <button type="button" class="ghost-button" id="fillDemoBtn">Use demo account</button>
+            </div>
+
+            <button type="submit" class="primary-btn" id="loginBtn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn-text" id="loginBtnText">Sign in</span>
+            </button>
+        </form>
+
+        <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+        <div class="demo-card">
+            <div class="demo-meta">
+                <strong>Demo account</strong>
+                <span>Username: <b>admin</b> &nbsp;•&nbsp; Password: <b>admin123</b></span>
+            </div>
+            <button type="button" class="ghost-button compact" id="copyDemoBtn">Copy credentials</button>
+        </div>
+
+        <div class="footer-row">
+            <span>© 2026 Colegio de Montalban Library</span>
+            <span class="footer-status">Secure sign-in experience</span>
+        </div>
+    </section>
+</main>
+
+<script>
+const storageKey = 'libratrackRememberedUsername';
+const notice = document.getElementById('notice');
+const form = document.getElementById('loginForm');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const rememberMe = document.getElementById('rememberMe');
+const loginBtn = document.getElementById('loginBtn');
+const loginBtnText = document.getElementById('loginBtnText');
+const fillDemoBtn = document.getElementById('fillDemoBtn');
+const copyDemoBtn = document.getElementById('copyDemoBtn');
+const togglePasswordBtn = document.getElementById('togglePassword');
+const togglePasswordLabel = document.getElementById('togglePasswordLabel');
+const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+const capsHint = document.getElementById('capsHint');
+const greeting = document.getElementById('greeting');
+const heroClock = document.getElementById('heroClock');
+let noticeTimer = null;
+
+function prefersReducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function createRipple(event) {
+    if (prefersReducedMotion()) return;
+    const target = event.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.clientX - rect.left}px`;
+    ripple.style.top = `${event.clientY - rect.top}px`;
+    target.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+}
+
+function showNotice(message, type = 'error', sticky = false) {
+    clearTimeout(noticeTimer);
+    notice.textContent = message;
+    notice.className = `notice ${type} visible`;
+
+    if (!sticky && type !== 'error') {
+        noticeTimer = setTimeout(() => {
+            notice.classList.remove('visible');
+        }, 4200);
+    }
+}
+
+function setBusyState(isBusy, label = 'Sign in') {
+    loginBtn.disabled = isBusy;
+    loginBtn.classList.toggle('loading', isBusy);
+    loginBtnText.textContent = label;
+
+    [usernameInput, passwordInput, rememberMe, fillDemoBtn, copyDemoBtn, togglePasswordBtn, forgotPasswordBtn].forEach((element) => {
+        if (element) element.disabled = isBusy;
+    });
+}
+
+function setGreeting() {
+    const hour = new Date().getHours();
+    const text = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    greeting.textContent = text;
+}
+
+function updateHeroClock() {
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    heroClock.textContent = `System ready · ${time}`;
+}
+
+function persistRememberedUsername() {
+    try {
+        if (rememberMe.checked && usernameInput.value.trim()) {
+            localStorage.setItem(storageKey, usernameInput.value.trim());
+        } else {
+            localStorage.removeItem(storageKey);
+        }
+    } catch (error) {
+        // Ignore storage failures in restricted environments.
+    }
+}
+
+function loadRememberedUsername() {
+    try {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) return;
+        usernameInput.value = saved;
+        rememberMe.checked = true;
+        passwordInput.focus();
+    } catch (error) {
+        // Ignore storage failures in restricted environments.
+    }
+}
+
+function updatePasswordToggle() {
+    const isVisible = passwordInput.type === 'text';
+    togglePasswordLabel.textContent = isVisible ? 'Hide' : 'Show';
+    togglePasswordBtn.setAttribute('aria-label', isVisible ? 'Hide password' : 'Show password');
+    togglePasswordBtn.title = isVisible ? 'Hide password' : 'Show password';
+}
+
+function updateCapsState(event) {
+    if (!event || typeof event.getModifierState !== 'function') return;
+    capsHint.hidden = !event.getModifierState('CapsLock');
+}
+
+async function copyDemoCredentials() {
+    const demoText = 'Username: admin\nPassword: admin123';
+    try {
+        await navigator.clipboard.writeText(demoText);
+        showNotice('Demo credentials copied to your clipboard.', 'success');
+    } catch (error) {
+        usernameInput.value = 'admin';
+        passwordInput.value = 'admin123';
+        showNotice('Clipboard access was blocked, so the demo credentials were filled in for you.', 'info');
+    }
+}
+
+function fillDemoCredentials() {
+    usernameInput.value = 'admin';
+    passwordInput.value = 'admin123';
+    rememberMe.checked = true;
+    persistRememberedUsername();
+    showNotice('Demo credentials are ready. Press Sign in to continue.', 'info');
+    loginBtn.focus();
+}
+
+async function checkExistingSession() {
+    try {
+        const response = await fetch('/api/session', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json().catch(() => ({}));
+        if (data.loggedIn) {
+            setBusyState(true, 'Redirecting...');
+            showNotice('Active session found. Redirecting to the dashboard...', 'info', true);
+            window.location.href = data.redirect || '/index.html';
+        }
+    } catch (error) {
+        // Silent fail for static preview mode.
+    }
+}
+
+async function attemptLogin(username, password) {
+    let response = null;
+    let data = null;
+
+    try {
+        response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+    } catch (error) {
+        response = null;
+    }
+
+    if (response) {
+        const contentType = response.headers.get('content-type') || '';
+        data = contentType.includes('application/json') ? await response.json().catch(() => ({})) : {};
+
+        if (!response.ok || data.ok === false) {
+            throw new Error(data.message || 'Invalid username or password.');
+        }
+
+        return { data, usedMock: false };
+    }
+
+    if (username === 'admin' && password === 'admin123') {
+        return {
+            data: {
+                ok: true,
+                message: 'Demo login successful. Your backend can redirect this page automatically.'
+            },
+            usedMock: true
+        };
+    }
+
+    throw new Error('Cannot reach the server right now. For preview mode, use the demo account.');
+}
+
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!username && !password) {
+        showNotice('Please enter both your username and password.', 'error', true);
+        usernameInput.focus();
+        return;
+    }
+
+    if (!username) {
+        showNotice('Please enter your username.', 'error', true);
+        usernameInput.focus();
+        return;
+    }
+
+    if (!password) {
+        showNotice('Please enter your password.', 'error', true);
+        passwordInput.focus();
+        return;
+    }
+
+    setBusyState(true, 'Signing in...');
+    showNotice('Checking your credentials...', 'info');
+
+    await new Promise((resolve) => setTimeout(resolve, 650));
+
+    try {
+        const result = await attemptLogin(username, password);
+        persistRememberedUsername();
+        document.body.classList.add('success-mode');
+        showNotice(result.data.message || 'Login successful. Welcome back!', 'success', true);
+
+        if (result.usedMock) {
+            setTimeout(() => {
+                setBusyState(false, 'Sign in');
+            }, 900);
+            return;
+        }
+
+        setTimeout(() => {
+            window.location.href = result.data.redirect || '/index.html';
+        }, 900);
+    } catch (error) {
+        document.body.classList.remove('success-mode');
+        setBusyState(false, 'Sign in');
+        showNotice(error.message || 'Unable to sign in right now.', 'error', true);
+        passwordInput.focus();
+        passwordInput.select();
+    }
+});
+
+rememberMe.addEventListener('change', persistRememberedUsername);
+usernameInput.addEventListener('input', () => {
+    if (rememberMe.checked) persistRememberedUsername();
+});
+
+passwordInput.addEventListener('keydown', updateCapsState);
+passwordInput.addEventListener('keyup', updateCapsState);
+passwordInput.addEventListener('focus', () => {
+    capsHint.hidden = true;
+});
+passwordInput.addEventListener('blur', () => {
+    capsHint.hidden = true;
+});
+
+fillDemoBtn.addEventListener('click', fillDemoCredentials);
+copyDemoBtn.addEventListener('click', copyDemoCredentials);
+forgotPasswordBtn.addEventListener('click', () => {
+    showNotice('Please contact the librarian or system administrator to reset your password.', 'info');
+});
+
+togglePasswordBtn.addEventListener('click', () => {
+    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    updatePasswordToggle();
+    passwordInput.focus();
+    const cursorPosition = passwordInput.value.length;
+    passwordInput.setSelectionRange(cursorPosition, cursorPosition);
+});
+
+document.querySelectorAll('.primary-btn, .ghost-button, .icon-button').forEach((button) => {
+    button.addEventListener('pointerdown', createRipple);
+});
+
+window.addEventListener('load', () => {
+    setGreeting();
+    updateHeroClock();
+    setInterval(updateHeroClock, 30000);
+    updatePasswordToggle();
+    loadRememberedUsername();
+    checkExistingSession();
+
+    if (!usernameInput.value.trim()) {
+        usernameInput.focus();
+    }
+});
+</script>
+</body>
+</html>

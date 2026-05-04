@@ -1,0 +1,3551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libratrack Attendance System</title>
+<style>
+:root{
+    --green-900:#0f4d2e;--green-800:#1e6b3d;--green-700:#2f9e44;--blue-700:#2563eb;--amber-600:#d97706;
+    --red-600:#dc2626;--slate-900:#0f172a;--slate-700:#334155;--slate-500:#64748b;--slate-300:#cbd5e1;
+    --slate-200:#e2e8f0;--slate-100:#f1f5f9;--white:#ffffff;--bg:#f7fafc;--shadow:0 16px 35px rgba(15,23,42,.08);
+    --radius:16px;--transition:all .2s ease;--transition-slow:all .38s cubic-bezier(.22,1,.36,1);
+    --transition-bounce:all .45s cubic-bezier(.2,.9,.2,1.12);--glow:0 18px 45px rgba(37,99,235,.18);
+    --panel-emerald:#10b981;--panel-teal:#14b8a6;--panel-sky:#38bdf8;--panel-violet:#8b5cf6;--panel-amber:#f59e0b;--panel-rose:#fb7185;
+    --panel-emerald-soft:linear-gradient(145deg,rgba(16,185,129,.16),rgba(255,255,255,.96) 42%,rgba(20,184,166,.10));
+    --panel-sky-soft:linear-gradient(145deg,rgba(56,189,248,.16),rgba(255,255,255,.96) 42%,rgba(99,102,241,.10));
+    --panel-violet-soft:linear-gradient(145deg,rgba(139,92,246,.16),rgba(255,255,255,.96) 42%,rgba(59,130,246,.10));
+    --panel-amber-soft:linear-gradient(145deg,rgba(245,158,11,.18),rgba(255,255,255,.96) 42%,rgba(251,113,133,.09));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;zoom:80%}
+@supports not (zoom:1){
+    body{
+        zoom:1;
+        transform:scale(.8);
+        transform-origin:top left;
+        width:125%;
+        min-height:125vh;
+    }
+}
+body{
+    margin:0;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    isolation:isolate;
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+    background-color:#eef5f7;
+    background-image:
+        radial-gradient(circle at 10% 12%, rgba(34,197,94,.18) 0, transparent 20%),
+        radial-gradient(circle at 84% 12%, rgba(20,184,166,.16) 0, transparent 22%),
+        radial-gradient(circle at 88% 78%, rgba(59,130,246,.16) 0, transparent 24%),
+        radial-gradient(circle at 14% 86%, rgba(168,85,247,.10) 0, transparent 20%),
+        radial-gradient(circle at 52% 48%, rgba(255,255,255,.55) 0, transparent 34%),
+        repeating-linear-gradient(90deg, rgba(148,163,184,.045) 0 1px, transparent 1px 120px),
+        repeating-linear-gradient(0deg, rgba(148,163,184,.035) 0 1px, transparent 1px 120px),
+        linear-gradient(135deg,#f7fbff 0%,#eef7f3 42%,#edf4ff 72%,#f9fbff 100%);
+    background-attachment:fixed;
+    color:var(--slate-900)
+}
+body::before,
+body::after{
+    content:'';
+    position:fixed;
+    width:420px;
+    height:420px;
+    border-radius:50%;
+    filter:blur(92px);
+    opacity:.42;
+    pointer-events:none;
+    z-index:0;
+    animation:ambientDrift 18s ease-in-out infinite;
+}
+body::before{
+    top:-120px;
+    left:-90px;
+    background:radial-gradient(circle, rgba(34,197,94,.34) 0%, rgba(20,184,166,.18) 46%, transparent 76%);
+}
+body::after{
+    right:-120px;
+    bottom:-110px;
+    background:radial-gradient(circle, rgba(59,130,246,.28) 0%, rgba(168,85,247,.18) 48%, transparent 76%);
+    animation-delay:-8s;
+}
+header{
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at top left, rgba(52,211,153,.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(56,189,248,.18), transparent 26%),
+        linear-gradient(135deg,#0f4d2e 0%,#166534 38%,#0f766e 74%,#2563eb 100%);
+    color:#fff;
+    padding:18px 24px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    box-shadow:0 18px 35px rgba(15,23,42,.16);
+    backdrop-filter:blur(6px)
+}
+header::before{
+    content:'';
+    position:absolute;
+    inset:-40% auto auto -12%;
+    width:320px;
+    height:320px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.15), transparent 68%);
+    pointer-events:none;
+}
+header::after{
+    content:'';
+    position:absolute;
+    left:24px;
+    right:24px;
+    bottom:8px;
+    height:6px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#14532d,#166534,#15803d,#16a34a,#22c55e,#4ade80);
+    opacity:.95;
+}
+header h1{margin:0;font-size:1.45rem;letter-spacing:.3px;position:relative;z-index:1}
+@keyframes ambientDrift{
+    0%,100%{transform:translate3d(0,0,0) scale(1)}
+    50%{transform:translate3d(26px,-22px,0) scale(1.08)}
+}
+@keyframes floaty{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+}
+@keyframes softPulse{
+    0%,100%{box-shadow:0 12px 28px rgba(15,23,42,.14)}
+    50%{box-shadow:0 18px 40px rgba(37,99,235,.16)}
+}
+@keyframes shimmerSweep{
+    0%{transform:translateX(-140%) skewX(-22deg)}
+    100%{transform:translateX(220%) skewX(-22deg)}
+}
+@keyframes rippleEffect{
+    from{transform:translate(-50%,-50%) scale(.2);opacity:.48}
+    to{transform:translate(-50%,-50%) scale(5.2);opacity:0}
+}
+.header-brand{display:flex;align-items:center;gap:16px;min-width:0}
+.header-logo{width:60px;height:83px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:visible;border-radius:0;background:transparent;border:none;padding:0;box-shadow:none}
+.header-logo svg{width:100%;height:100%;display:block}
+
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:10px 14px;border-radius:999px;transition:var(--transition-slow);backdrop-filter:blur(8px);position:relative;z-index:1}
+.dot{width:10px;height:10px;border-radius:50%;background:#cbd5e1;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+.dot.live{background:#22c55e}.dot.scan{background:#f59e0b}.dot.error{background:#ef4444}
+main{display:grid;grid-template-columns:1.4fr .95fr;gap:20px;padding:20px}
+.card{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,250,252,.92));
+    border:1px solid rgba(226,232,240,.92);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    transition:var(--transition-slow);
+    backdrop-filter:blur(12px)
+}
+.card::before{
+    content:'';
+    position:absolute;
+    left:0;
+    right:0;
+    top:0;
+    height:5px;
+    background:linear-gradient(90deg,#166534,#15803d,#22c55e);
+    opacity:.95;
+}
+.card.panel-mint{background:var(--panel-emerald-soft)}
+.card.panel-blue{background:var(--panel-sky-soft)}
+.card.panel-violet{background:var(--panel-violet-soft)}
+.card.panel-amber{background:var(--panel-amber-soft)}
+.card.panel-mint::before{background:linear-gradient(90deg,#14532d,#16a34a,#4ade80)}
+.card.panel-blue::before{background:linear-gradient(90deg,#166534,#22c55e,#86efac)}
+.card.panel-violet::before{background:linear-gradient(90deg,#14532d,#15803d,#4ade80)}
+.card.panel-amber::before{background:linear-gradient(90deg,#166534,#16a34a,#86efac)}
+.section{padding:18px;position:relative;z-index:1}
+.section-title{
+    position:relative;
+    font-size:.92rem;
+    font-weight:800;
+    color:var(--slate-700);
+    letter-spacing:.8px;
+    text-transform:uppercase;
+    margin:0 0 14px;
+    border-bottom:1px solid rgba(203,213,225,.85);
+    padding-bottom:10px
+}
+.section-title::after{
+    content:'';
+    position:absolute;
+    left:0;
+    bottom:-1px;
+    width:72px;
+    height:3px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#166534,#16a34a,#4ade80);
+}
+.camera-placeholder{color:#dbe4ee;text-align:center;padding:16px;line-height:1.6}.scan-box{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.scan-input,.text-input,.number-input{width:100%;padding:12px 14px;border:1px solid var(--slate-300);border-radius:12px;font-size:.96rem;outline:none;transition:var(--transition-slow);background:#fff;transform:translateZ(0)}
+.scan-input:focus,.text-input:focus,.number-input:focus{border-color:#3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.12),0 12px 30px rgba(59,130,246,.12);transform:translateY(-1px)}
+.scan-input{flex:1;min-width:260px}
+.btn{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+    border:none;
+    border-radius:12px;
+    padding:11px 14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:var(--transition-bounce);
+    font-size:.92rem;
+    box-shadow:0 10px 24px rgba(15,23,42,.08)
+}
+.btn:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 18px 30px rgba(15,23,42,.14)}
+.btn:disabled{opacity:.65;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.primary{background:#3b82f6;color:#fff}.btn.success{background:#16a34a;color:#fff}.btn.warning{background:#d97706;color:#fff}
+.btn.danger{background:#dc2626;color:#fff}.btn.dark{background:#334155;color:#fff}.btn.soft{background:#eef2ff;color:#3730a3}.btn.gray{background:#e2e8f0;color:#0f172a}
+.statusbar{position:fixed;left:20px;bottom:20px;z-index:60;margin:0;width:min(420px,calc(100vw - 40px));max-height:105px;overflow:auto;padding:14px 16px;background:linear-gradient(135deg,rgba(240,253,250,.9),rgba(239,246,255,.85),rgba(250,245,255,.82));border:1px solid rgba(226,232,240,.88);border-radius:14px;box-shadow:0 16px 35px rgba(15,23,42,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-family:Consolas,monospace;color:var(--slate-700);animation:softPulse 4s ease-in-out infinite}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.top-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.table-wrap{overflow:auto;border-top:1px solid var(--slate-200)}
+table{width:100%;border-collapse:collapse;background:#fff}
+thead{background:#f8fafc;position:sticky;top:0;z-index:3}
+th,td{padding:12px 10px;border-bottom:1px solid var(--slate-200);text-align:left;vertical-align:middle;font-size:.93rem}
+th{font-size:.82rem;color:var(--slate-700);letter-spacing:.55px}
+tbody tr:hover{background:#f8fbff;transform:translateX(3px)}
+tbody tr.student-row{cursor:pointer}
+tbody tr.student-row.selected-row{background:#eaf3ff !important;box-shadow:inset 4px 0 0 #3b82f6}
+tbody tr.overdue-row td{background:#fef2f2 !important;color:#991b1b;font-weight:600}
+tbody tr.overdue-row:hover td{background:#fee2e2 !important}
+tbody tr.overdue-row.selected-row td{background:#fecaca !important}
+.action-stack{display:flex;gap:8px;flex-wrap:wrap}
+.action-stack .btn{padding:8px 10px;font-size:.8rem;border-radius:10px}
+#studentTableBody .action-stack{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(108px,1fr));
+    gap:6px;
+    width:100%;
+}
+#studentTableBody .action-stack .btn{
+    width:100%;
+    min-height:34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:7px 10px;
+    border-radius:10px;
+    text-align:center;
+    white-space:nowrap;
+    font-size:.76rem;
+}
+#studentTableBody td:last-child{min-width:240px}
+@media (max-width:640px){
+    #studentTableBody .action-stack{grid-template-columns:1fr}
+    #studentTableBody td:last-child{min-width:180px}
+}
+.kv{display:grid;grid-template-columns:1fr;gap:12px}
+.kv-item small{display:block;color:var(--slate-500);font-weight:700;text-transform:uppercase;letter-spacing:.45px;margin-bottom:6px}
+.kv-item .value{padding:11px 12px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:12px;font-weight:600;color:#1e293b;min-height:45px;display:flex;align-items:center}
+.message{margin-top:14px;padding:12px 14px;border-radius:12px;background:#ecfdf3;border:1px solid #bbf7d0;color:#166534;font-weight:700}
+.barcode-card{padding:16px;border:1px dashed #cbd5e1;border-radius:14px;background:linear-gradient(180deg,#ffffff,#f8fafc)}
+.barcode-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.barcode-frame{background:#fff;border:1px solid #dbe4ee;border-radius:12px;padding:16px;min-height:180px;display:flex;align-items:center;justify-content:center;overflow:auto}
+.barcode-frame img{max-width:100%;height:auto;display:block}
+.barcode-empty{color:var(--slate-500);font-weight:700;text-align:center;line-height:1.6}
+.note{color:var(--slate-500);font-size:.9rem;line-height:1.5}
+.meta-grid{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.meta-box{padding:12px;border-radius:12px;background:linear-gradient(180deg,#ffffff,rgba(248,250,252,.95));border:1px solid var(--slate-200);transition:var(--transition-slow);box-shadow:0 8px 18px rgba(15,23,42,.05)}
+.meta-box:nth-child(1){background:linear-gradient(180deg,rgba(236,253,245,.95),#ffffff)}
+.meta-box:nth-child(2){background:linear-gradient(180deg,rgba(239,246,255,.95),#ffffff)}
+.meta-box:nth-child(3){background:linear-gradient(180deg,rgba(245,243,255,.95),#ffffff)}
+.meta-box small{display:block;color:var(--slate-500);font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.meta-box strong{font-size:1rem}
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:.78rem;font-weight:800;letter-spacing:.25px}
+.badge.open{background:#eff6ff;color:#1d4ed8}.badge.completed{background:#ecfdf5;color:#15803d}.badge.timeout{background:#fff7ed;color:#c2410c}
+.dialog{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20;overflow:auto;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease, visibility .28s ease;backdrop-filter:blur(4px)}
+.dialog.open{opacity:1;visibility:visible;pointer-events:auto}
+.dialog-card{width:min(480px,100%);background:#fff;border-radius:18px;border:1px solid var(--slate-200);box-shadow:0 20px 40px rgba(0,0,0,.2);padding:20px;opacity:0;transform:translateY(22px) scale(.96);transition:transform .34s cubic-bezier(.22,1,.36,1), opacity .34s ease}
+.dialog-card.large-dialog{width:min(1200px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);display:flex;flex-direction:column;overflow:hidden}
+.modal-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.modal-toolbar .action-stack{margin-left:auto;justify-content:flex-end}
+.modal-table-wrap{max-height:50vh;overflow:auto;border-top:1px solid var(--slate-200);border-bottom:1px solid var(--slate-200)}
+.form-stack{display:grid;gap:12px}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.empty-row{padding:22px;text-align:center;color:var(--slate-500);font-weight:700}
+.search-wrap{margin-top:12px}@media (max-width:1100px){main{grid-template-columns:1fr}.top-actions{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){header{align-items:flex-start}.header-brand{width:100%}.header-logo{width:48px;height:66px}.scan-box,.barcode-toolbar,.form-actions{flex-direction:column}.btn,.scan-input{width:100%}.top-actions{grid-template-columns:1fr}.meta-grid{grid-template-columns:1fr}.dialog-card.large-dialog{width:calc(100vw - 20px);max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);border-radius:14px}.modal-toolbar{flex-direction:column;align-items:stretch}.modal-toolbar .action-stack{margin-left:0;width:100%}.modal-toolbar .action-stack .btn{flex:1 1 100%}.modal-table-wrap{max-height:42vh}.statusbar{left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:110px}}
+
+
+
+@keyframes fabSlideIn{
+    0%{opacity:0;transform:translateX(38px) scale(.82)}
+    100%{opacity:1;transform:translateX(0) scale(1)}
+}
+@keyframes fabGlassGlow{
+    0%,100%{
+        box-shadow:
+            0 16px 35px rgba(15,23,42,.18),
+            0 0 0 0 rgba(255,255,255,0),
+            inset 0 1px 0 rgba(255,255,255,.18);
+        filter:saturate(1);
+    }
+    50%{
+        box-shadow:
+            0 24px 46px rgba(15,23,42,.24),
+            0 0 0 10px rgba(255,255,255,.05),
+            inset 0 1px 0 rgba(255,255,255,.28);
+        filter:saturate(1.06);
+    }
+}
+@keyframes fabRingPulse{
+    0%{transform:scale(.88);opacity:.6}
+    100%{transform:scale(1.42);opacity:0}
+}
+@keyframes fabIconFloat{
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    50%{transform:translateY(-4px) rotate(-6deg)}
+}
+
+.floating-about-tab,
+.floating-borrow-tab,
+.floating-barcode-tab{
+    position:fixed;
+    right:22px;
+    z-index:40;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:fit-content;
+    min-width:0;
+    max-width:max-content;
+    white-space:nowrap;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:14px 18px;
+    box-shadow:0 16px 35px rgba(15,23,42,.18);
+    font-weight:800;
+    letter-spacing:.2px;
+    cursor:pointer;
+    overflow:hidden;
+    isolation:isolate;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    transition:
+        transform .28s cubic-bezier(.22,1,.36,1),
+        box-shadow .28s ease,
+        filter .28s ease,
+        border-color .28s ease;
+    animation:
+        fabSlideIn .62s cubic-bezier(.22,1,.36,1) both,
+        fabGlassGlow 3.8s ease-in-out .65s infinite;
+}
+.floating-about-tab::after,
+.floating-borrow-tab::after,
+.floating-barcode-tab::after{
+    content:'';
+    position:absolute;
+    inset:-6px;
+    border-radius:inherit;
+    border:2px solid rgba(255,255,255,.26);
+    opacity:0;
+    pointer-events:none;
+}
+.floating-about-tab:hover,
+.floating-borrow-tab:hover,
+.floating-barcode-tab:hover{
+    transform:translateY(-6px) translateX(-5px) scale(1.04);
+    box-shadow:0 28px 50px rgba(15,23,42,.28);
+    border-color:rgba(255,255,255,.32);
+    filter:brightness(1.04) saturate(1.08);
+}
+.floating-about-tab:hover::after,
+.floating-borrow-tab:hover::after,
+.floating-barcode-tab:hover::after{
+    animation:fabRingPulse .82s ease-out;
+}
+.floating-borrow-tab{
+    bottom:96px;
+    background:
+        linear-gradient(135deg,rgba(22,163,74,.92),rgba(34,197,94,.84)),
+        linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03));
+    animation-delay:.08s,.72s;
+}
+.floating-about-tab{
+    bottom:30px;
+    background:
+        linear-gradient(135deg,rgba(15,118,110,.92),rgba(20,184,166,.82)),
+        linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03));
+    animation-delay:.16s,.8s;
+}
+.floating-barcode-tab{
+    bottom:162px;
+    background:
+        linear-gradient(135deg,rgba(37,99,235,.92),rgba(59,130,246,.84)),
+        linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03));
+    animation-delay:0s,.64s;
+}
+.fab-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+    font-size:1rem;
+    line-height:1;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,.16));
+    animation:fabIconFloat 2.3s ease-in-out infinite;
+}
+.fab-label{display:inline-block}
+
+
+.library-drawer,
+.barcode-drawer{
+    position:fixed;
+    left:50%;
+    top:50%;
+    right:auto;
+    bottom:auto;
+    transform:translate(-50%, calc(-50% + 24px)) scale(.965);
+    width:min(760px, calc(100vw - 32px));
+    max-width:760px;
+    max-height:calc(100vh - 70px);
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    box-shadow:0 24px 60px rgba(15,23,42,.20);
+    z-index:41;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:transform .34s cubic-bezier(.22,1,.36,1), opacity .28s ease, visibility .28s ease;
+}
+.library-drawer.open,
+.barcode-drawer.open{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    transform:translate(-50%, -50%) scale(1);
+}
+
+.about-drawer{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.52);
+    z-index:80;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .28s ease, visibility .28s ease;
+}
+.about-drawer.open{opacity:1;visibility:visible;pointer-events:auto}
+.about-modal-card{
+    width:min(1180px, calc(100vw - 32px));
+    max-width:1180px;
+    max-height:calc(100vh - 40px);
+    background:#fff;
+    border:1px solid rgba(226,232,240,.95);
+    border-radius:26px;
+    box-shadow:0 28px 70px rgba(15,23,42,.28);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    margin:auto;
+    opacity:0;
+    transform:translateY(26px) scale(.965);
+    transition:transform .36s cubic-bezier(.22,1,.36,1), opacity .3s ease;
+}
+.about-modal-header{
+    background:linear-gradient(135deg,#0f4d2e 0%,#166534 55%,#22c55e 100%);
+    color:#fff;
+    padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+.about-modal-title{
+    display:grid;
+    gap:4px;
+}
+.about-modal-title strong{
+    font-size:1.15rem;
+    letter-spacing:.2px;
+}
+.about-modal-title span{
+    color:rgba(255,255,255,.84);
+    font-size:.92rem;
+}
+.library-drawer-header{
+    background:linear-gradient(135deg,#0f4d2e,#1e6b3d);
+    color:#fff;
+    padding:14px 16px;
+    font-weight:800;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+.library-drawer-body,
+.barcode-drawer-body{
+    padding:18px;
+    display:grid;
+    gap:12px;
+    overflow:auto;
+}
+.about-drawer-body{
+    padding:24px 28px 28px;
+    display:grid;
+    gap:16px;
+    overflow:auto;
+    background:linear-gradient(180deg,#f8fbfd 0%,#ffffff 100%);
+    place-items:center;
+}
+.about-combined-panel{
+    width:min(1080px, 100%);
+    margin:0 auto;
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(135deg,#ecfdf5 0%,#f8fafc 55%,#eff6ff 100%);
+    border:1px solid #dbeafe;
+    border-radius:24px;
+    padding:28px 30px 24px;
+    box-shadow:0 16px 34px rgba(15,23,42,.08);
+}
+.about-combined-panel::after{
+    content:'';
+    position:absolute;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:rgba(37,99,235,.08);
+    right:-18px;
+    top:-18px;
+}
+.about-combined-panel > *{
+    position:relative;
+    z-index:1;
+}
+.about-system-label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#ffffff;
+    color:#166534;
+    border:1px solid #bbf7d0;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:.8rem;
+    font-weight:800;
+    letter-spacing:.35px;
+    text-transform:uppercase;
+}
+.about-system-title{
+    margin:14px 0 10px;
+    font-size:1.32rem;
+    font-weight:800;
+    color:#0f172a;
+    line-height:1.3;
+    max-width:1040px;
+}
+.about-system-text,
+.about-team-text{
+    margin:0;
+    color:#334155;
+    line-height:1.72;
+    max-width:100%;
+}
+.about-feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-top:16px;
+}
+.about-feature-card{
+    position:relative;
+    z-index:1;
+    background:rgba(255,255,255,.92);
+    border:1px solid #dbeafe;
+    border-radius:18px;
+    padding:14px;
+    box-shadow:0 10px 24px rgba(15,23,42,.06);
+}
+.about-feature-card strong{
+    display:block;
+    color:#0f172a;
+    margin-bottom:6px;
+    font-size:.95rem;
+}
+.about-feature-card p{
+    margin:0;
+    color:#475569;
+    font-size:.9rem;
+    line-height:1.55;
+}
+.about-section-divider{
+    height:1px;
+    background:linear-gradient(90deg,rgba(148,163,184,.1),rgba(148,163,184,.75),rgba(148,163,184,.1));
+    margin:22px 0 18px;
+}
+.about-list-title{
+    margin:0;
+    font-size:1rem;
+    font-weight:800;
+    color:#1e293b;
+}
+.about-team-text{
+    margin-top:8px;
+    font-size:.92rem;
+}
+.about-links-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+    align-items:stretch;
+    margin-top:14px;
+}
+.about-card{
+    background:#ffffff;
+    border:1px solid var(--slate-200);
+    border-radius:14px;
+    padding:12px 14px;
+    min-height:82px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    box-shadow:0 8px 18px rgba(15,23,42,.04);
+}
+.about-card:last-child:nth-child(odd){
+    grid-column:1 / -1;
+    width:calc(50% - 6px);
+    justify-self:center;
+}
+.about-card a{
+    color:#0f4d2e;
+    font-weight:800;
+    text-decoration:none;
+    font-size:.92rem;
+    line-height:1.35;
+}
+.about-card a:hover{text-decoration:underline}
+.about-role{
+    margin-top:4px;
+    color:var(--slate-700);
+    font-size:.84rem;
+    font-weight:700;
+    line-height:1.4;
+}
+.library-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.borrower-panel{border:1px solid var(--slate-200);border-radius:14px;background:#f8fafc;padding:14px;display:grid;gap:10px}
+.borrower-panel-title{font-size:.82rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--slate-700)}
+.borrower-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.borrower-item small{display:block;color:var(--slate-500);font-weight:700;text-transform:uppercase;letter-spacing:.35px;margin-bottom:4px}
+.borrower-item .value{padding:10px 11px;border:1px solid var(--slate-200);background:#fff;border-radius:10px;min-height:42px;display:flex;align-items:center;font-weight:600;color:#1e293b}
+.borrowing-status{
+    display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;
+    font-size:.78rem;font-weight:800;letter-spacing:.25px
+}
+.borrowing-status.borrowed{background:#fff7ed;color:#c2410c}
+.borrowing-status.returned{background:#ecfdf5;color:#15803d}
+.borrowing-status.overdue{background:#fef2f2;color:#b91c1c}
+#borrowNotice{
+    display:none;
+    margin-top:10px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+}
+@media (max-width:900px){
+    .about-combined-panel::after{display:none}
+    .about-feature-grid{grid-template-columns:1fr}
+    .about-links-grid{grid-template-columns:1fr}
+    .about-card:last-child:nth-child(odd){
+        grid-column:auto;
+        width:100%;
+    }
+}
+@media (max-width:640px){
+    .floating-about-tab,
+    .floating-borrow-tab,
+    .floating-barcode-tab{right:12px;width:fit-content;max-width:max-content;padding:12px 16px}
+    .floating-about-tab{bottom:12px}
+    .floating-borrow-tab{bottom:68px}
+    .floating-barcode-tab{bottom:124px}
+    .about-drawer{padding:10px}
+    .about-modal-card{width:calc(100vw - 20px);max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);border-radius:20px}
+    .about-drawer-body{padding:16px;place-items:stretch}
+    .about-combined-panel{width:100%;padding:20px 18px 18px}
+    .about-system-title{font-size:1.15rem}
+    .about-system-text,
+    .about-team-text{line-height:1.7}
+    .library-drawer,
+    .barcode-drawer{
+        left:50%;
+        top:50%;
+        right:auto;
+        bottom:auto;
+        transform:translate(-50%, -50%);
+        width:calc(100vw - 20px);
+        max-width:calc(100vw - 20px);
+        max-height:calc(100vh - 24px);
+        border-radius:18px;
+    }
+    .library-drawer-body,
+    .barcode-drawer-body{padding:14px}
+    .library-grid{grid-template-columns:1fr}
+    .borrower-panel-grid{grid-template-columns:1fr}
+}
+
+
+.btn::before,
+.floating-about-tab::before,
+.floating-borrow-tab::before,
+.floating-barcode-tab::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(110deg,transparent 18%,rgba(255,255,255,.34) 50%,transparent 82%);
+    transform:translateX(-140%) skewX(-22deg);
+    pointer-events:none;
+}
+.btn:hover::before,
+.floating-about-tab:hover::before,
+.floating-borrow-tab:hover::before,
+.floating-barcode-tab:hover::before{animation:shimmerSweep .9s ease}
+.btn:active,
+.floating-about-tab:active,
+.floating-borrow-tab:active,
+.floating-barcode-tab:active{transform:translateY(0) scale(.98)}
+.btn-ripple{
+    position:absolute;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:rgba(255,255,255,.42);
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    animation:rippleEffect .65s ease-out forwards;
+}
+.card:hover,
+.meta-box:hover,
+.about-card:hover,
+.about-feature-card:hover,
+.borrower-panel:hover,
+.barcode-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 22px 40px rgba(15,23,42,.10)
+}
+.pill:hover{transform:translateY(-2px);background:rgba(255,255,255,.18)}
+thead th{backdrop-filter:blur(6px)}
+.dialog.open .dialog-card,
+.about-drawer.open .about-modal-card{opacity:1;transform:translateY(0) scale(1)}
+.library-drawer-header,
+.about-modal-header{position:relative;overflow:hidden}
+.library-drawer-header::after,
+.about-modal-header::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg,transparent 20%,rgba(255,255,255,.12) 50%,transparent 80%);
+    transform:translateX(-120%);
+    animation:shimmerSweep 5.5s ease-in-out infinite;
+}
+.dot.live{box-shadow:0 0 0 0 rgba(34,197,94,.45);animation:statusPing 2s ease-in-out infinite}
+.dot.scan{box-shadow:0 0 0 0 rgba(245,158,11,.38);animation:statusPing 1.6s ease-in-out infinite}
+.dot.error{box-shadow:0 0 0 0 rgba(239,68,68,.28)}
+@keyframes statusPing{
+    0%{box-shadow:0 0 0 0 rgba(34,197,94,.38)}
+    70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}
+    100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}
+}
+.ui-reveal{
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+    transition:opacity .56s ease var(--reveal-delay,0ms), transform .56s cubic-bezier(.22,1,.36,1) var(--reveal-delay,0ms);
+}
+.ui-reveal.is-visible{opacity:1;transform:none}
+
+
+
+/* --- UI polish and smoother UX additions --- */
+html{zoom:100% !important}
+@supports not (zoom:1){
+    body{
+        transform:none !important;
+        width:auto !important;
+        min-height:100vh !important;
+    }
+}
+body{padding-bottom:132px}
+body.shell-locked{overflow:hidden}
+body.scan-focus .scan-hero-card{
+    box-shadow:0 26px 56px rgba(37,99,235,.14),0 0 0 1px rgba(59,130,246,.08)
+}
+body.scan-focus .scan-hero-card::before{
+    background:linear-gradient(90deg,#2563eb,#16a34a,#86efac)
+}
+::selection{background:rgba(59,130,246,.18);color:var(--slate-900)}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:rgba(241,245,249,.75)}
+::-webkit-scrollbar-thumb{
+    background:linear-gradient(180deg,rgba(15,77,46,.55),rgba(37,99,235,.45));
+    border-radius:999px;
+    border:3px solid rgba(255,255,255,.6)
+}
+header{
+    position:sticky;
+    top:0;
+    z-index:70;
+    padding:18px 24px 18px
+}
+.header-copy{display:grid;gap:8px;min-width:0}
+.header-subtitle{
+    margin:0;
+    color:rgba(255,255,255,.82);
+    max-width:720px;
+    font-size:.94rem;
+    line-height:1.6
+}
+.header-command-row{display:flex;gap:10px;flex-wrap:wrap}
+.header-utility-btn{
+    background:rgba(255,255,255,.16);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow:none
+}
+.header-utility-btn:hover{background:rgba(255,255,255,.22)}
+.pill-compact{padding:10px 12px;font-weight:700}
+#systemLabel,#liveClock{white-space:nowrap}
+main{
+    max-width:1720px;
+    margin:0 auto;
+    padding:26px 24px 36px;
+    align-items:start
+}
+main > section{display:grid;gap:20px;align-content:start}
+.scan-hero-card{overflow:visible}
+.scan-hero-card .section-title{margin-bottom:8px}
+.hero-copy{
+    margin:0 0 18px;
+    color:var(--slate-700);
+    max-width:760px;
+    line-height:1.65;
+    font-size:.96rem
+}
+.scan-box-upgraded{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    gap:12px
+}
+.scan-box-upgraded .btn{min-width:150px}
+.scan-ghost-btn{
+    background:rgba(15,23,42,.04);
+    color:var(--slate-900);
+    border:1px solid rgba(148,163,184,.25)
+}
+.scan-ghost-btn:hover{background:rgba(59,130,246,.08)}
+.scan-shortcuts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.shortcut-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(148,163,184,.25);
+    font-weight:700;
+    color:var(--slate-700);
+    backdrop-filter:blur(8px)
+}
+.scan-help-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin-top:14px
+}
+.scan-help-card{
+    padding:14px 15px;
+    border-radius:16px;
+    background:rgba(255,255,255,.8);
+    border:1px solid rgba(226,232,240,.85);
+    box-shadow:0 10px 24px rgba(15,23,42,.05)
+}
+.scan-help-card strong{display:block;color:var(--slate-900);margin-bottom:6px}
+.scan-help-card p{margin:0;color:var(--slate-700);font-size:.9rem;line-height:1.55}
+.search-wrap{display:grid;gap:10px}
+.search-input-shell{position:relative}
+.search-input-shell .text-input{padding-right:112px}
+.search-tools{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap
+}
+.search-count{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(15,23,42,.05);
+    font-weight:700;
+    color:var(--slate-700)
+}
+.clear-search-btn{
+    position:absolute;
+    right:8px;
+    top:50%;
+    transform:translateY(-50%);
+    padding:9px 12px;
+    font-size:.8rem;
+    border-radius:10px;
+    box-shadow:none
+}
+.clear-search-btn.hidden{display:none}
+.table-wrap{border-top:1px solid var(--slate-200);border-radius:0 0 var(--radius) var(--radius)}
+table{min-width:1000px}
+thead{background:rgba(248,250,252,.82);backdrop-filter:blur(12px)}
+tbody tr{transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
+tbody tr:nth-child(even){background:rgba(248,250,252,.64)}
+tbody tr:hover{box-shadow:inset 0 0 0 1px rgba(148,163,184,.18)}
+.top-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+.top-actions .btn{
+    min-height:50px;
+    display:flex;
+    align-items:center;
+    justify-content:center
+}
+.kv{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kv-item .value{background:rgba(255,255,255,.78);backdrop-filter:blur(8px)}
+.message{position:relative;overflow:hidden}
+.message::before{
+    content:'';
+    position:absolute;
+    inset:0 auto 0 0;
+    width:5px;
+    background:linear-gradient(180deg,#22c55e,#3b82f6)
+}
+.statusbar{
+    bottom:22px;
+    left:22px;
+    max-height:unset;
+    display:flex;
+    align-items:center;
+    gap:10px
+}
+.statusbar::before{
+    content:'';
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#94a3b8;
+    box-shadow:0 0 0 6px rgba(148,163,184,.16)
+}
+.statusbar.status-live::before{background:#22c55e;box-shadow:0 0 0 6px rgba(34,197,94,.16)}
+.statusbar.status-scan::before{background:#f59e0b;box-shadow:0 0 0 6px rgba(245,158,11,.18)}
+.statusbar.status-error::before{background:#ef4444;box-shadow:0 0 0 6px rgba(239,68,68,.18)}
+.shell-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.34);
+    backdrop-filter:blur(4px);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .24s ease,visibility .24s ease;
+    z-index:39
+}
+.shell-overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+.toast-stack{
+    position:fixed;
+    right:22px;
+    top:92px;
+    display:grid;
+    gap:10px;
+    z-index:95;
+    width:min(360px,calc(100vw - 24px))
+}
+.toast{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:start;
+    gap:12px;
+    padding:14px 16px;
+    border-radius:16px;
+    border:1px solid rgba(226,232,240,.85);
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(14px);
+    box-shadow:0 18px 36px rgba(15,23,42,.14);
+    transform:translateY(-8px) scale(.98);
+    opacity:0;
+    animation:toastIn .28s cubic-bezier(.22,1,.36,1) forwards
+}
+.toast.toast-exit{animation:toastOut .24s ease forwards}
+.toast-icon{
+    width:30px;
+    height:30px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1rem;
+    font-weight:800
+}
+.toast-content strong{display:block;color:var(--slate-900);margin-bottom:2px}
+.toast-content p{margin:0;color:var(--slate-700);line-height:1.45;font-size:.9rem}
+.toast-close{background:transparent;border:none;font-size:1rem;cursor:pointer;color:var(--slate-500)}
+.toast-info .toast-icon{background:rgba(59,130,246,.12);color:#2563eb}
+.toast-success .toast-icon{background:rgba(34,197,94,.12);color:#16a34a}
+.toast-error .toast-icon{background:rgba(239,68,68,.12);color:#dc2626}
+.toast-warning .toast-icon{background:rgba(245,158,11,.12);color:#d97706}
+@keyframes toastIn{to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-6px) scale(.98)}}
+@keyframes cardGlow{
+    0%{box-shadow:0 16px 35px rgba(15,23,42,.08)}
+    50%{box-shadow:0 24px 52px rgba(37,99,235,.18)}
+    100%{box-shadow:0 16px 35px rgba(15,23,42,.08)}
+}
+.card-attention{animation:cardGlow .9s ease}
+.floating-about-tab,.floating-borrow-tab,.floating-barcode-tab{right:18px}
+.floating-barcode-tab{bottom:186px}
+.floating-borrow-tab{bottom:122px}
+.floating-about-tab{bottom:58px}
+.dialog,.about-drawer{z-index:90}
+.library-drawer,.barcode-drawer{z-index:91}
+.dialog-card,.library-drawer,.barcode-drawer,.about-modal-card{will-change:transform,opacity}
+@media (max-width:1400px){.kv{grid-template-columns:1fr}}
+@media (max-width:1100px){
+    main{padding:22px 18px 30px}
+    .scan-box-upgraded{grid-template-columns:1fr}
+    .scan-box-upgraded .btn{width:100%}
+    .scan-help-grid{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+    .header-command-row{width:100%}
+    .toast-stack{left:12px;right:12px;top:auto;bottom:128px;width:auto}
+    .statusbar{left:12px;right:12px;width:auto}
+}
+@media (max-width:640px){
+    header{padding:16px 14px 18px}
+    .header-right{width:100%}
+    .header-right > *{flex:1 1 100%}
+    .search-input-shell .text-input{padding-right:14px}
+    .clear-search-btn{position:static;transform:none;width:100%}
+    .search-tools{align-items:stretch}
+    .floating-about-tab,.floating-borrow-tab,.floating-barcode-tab{
+        right:12px;
+        left:12px;
+        justify-content:center;
+        width:auto;
+        max-width:none
+    }
+    .floating-barcode-tab{bottom:160px}
+    .floating-borrow-tab{bottom:92px}
+    .floating-about-tab{bottom:24px}
+}
+@media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none !important;transition:none !important}
+    .ui-reveal{opacity:1;transform:none}
+}
+
+</style>
+</head>
+<body>
+<header>
+    <div class="header-brand">
+        <div class="header-logo" aria-hidden="true">
+<svg width="123" height="170" viewBox="67 97 346 286" fill="none" xmlns="http://www.w3.org/2000/svg">
+<image width="480" height="480" preserveAspectRatio="none" href="data:image/png;base64,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"/>
+</svg>
+        </div>
+        <div>
+            <h1>LIBRATRACK ATTENDANCE SYSTEM</h1>
+</div>
+    </div>
+    <div class="header-right">
+        <div class="pill">Logged in as <strong>{{ username }}</strong></div>
+        <div class="pill"><span class="dot" id="systemDot"></span><span id="systemLabel">System Idle</span></div>
+        <button class="btn danger" onclick="window.location.href='/logout'">Logout</button>
+    </div>
+</header>
+
+<main>
+    <section>
+<div class="card section panel-mint" style="margin-top:20px">
+            <h2 class="section-title">Barcode / Student ID Scan</h2>
+            <div class="scan-box">
+                <input type="text" id="scanInput" class="scan-input" placeholder="Scan barcode or enter student ID then press Enter" autocomplete="off" autofocus>
+                <button class="btn primary" onclick="submitScanCode()">Submit Scan</button>
+            </div>
+            <p class="note" style="margin-top:10px">This accepts both scanner input and manual student ID entry.</p>
+        </div>
+
+        <div class="card panel-blue" style="margin-top:20px">
+            <div class="section">
+                <h2 class="section-title">Student List</h2>
+                <div class="meta-grid">
+                    <div class="meta-box"><small>Total Students</small><strong id="metaStudents">0</strong></div>
+                    <div class="meta-box"><small>Total Records</small><strong id="metaRecords">0</strong></div>
+                    <div class="meta-box"><small>Cooldown</small><strong>20 seconds</strong></div>
+                </div>
+
+                <div class="search-wrap">
+                    <input
+                        type="text"
+                        id="studentSearch"
+                        class="text-input"
+                        placeholder="Search by student ID, name, email, age, year, course, address, or barcode"
+                    >
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Age</th>
+                            <th>Year</th>
+                            <th>Barcode</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="card section panel-violet">
+            <h2 class="section-title">Actions</h2>
+            <div class="top-actions">
+            <button class="btn success" onclick="openRegisterTeacherDialog()">Register Teacher</button>
+            <button class="btn success" onclick="openRegisterDialog()">Register Student</button>
+            <button class="btn soft" onclick="toggleAttendanceTable()">Attendance Table</button>
+            <button class="btn soft" onclick="toggleTeachersDialog(true)">Teacher List</button>
+            <button class="btn soft" onclick="toggleBooksDialog(true)">Book Inventory</button>
+            <button class="btn soft" onclick="toggleBorrowingsDialog(true)">Borrowing Records</button>
+        </div>
+            <div style="margin-top:12px">
+                <button class="btn primary" onclick="openAttendancePage()" style="width:100%">Open Attendance in New Tab</button>
+            </div>
+        </div>
+
+        <div class="card section panel-blue" style="margin-top:20px">
+            <h2 class="section-title">Library / System Statistics</h2>
+            <div class="meta-grid">
+                <div class="meta-box"><small>Total Students</small><strong id="statTotalStudents">0</strong></div>
+                <div class="meta-box"><small>Total Teachers</small><strong id="statTotalTeachers">0</strong></div>
+                <div class="meta-box"><small>Total Books</small><strong id="statTotalBooks">0</strong></div>
+                <div class="meta-box"><small>Available Books</small><strong id="statAvailableBooks">0</strong></div>
+                <div class="meta-box"><small>Borrowed Books</small><strong id="statBorrowedBooks">0</strong></div>
+                <div class="meta-box"><small>Overdue Books</small><strong id="statOverdueBooks">0</strong></div>
+            </div>
+            <p class="note" style="margin-top:10px">These statistics update automatically based on the current student, teacher, and book records loaded from the system.</p>
+        </div>
+
+        <div class="card section panel-amber" style="margin-top:20px">
+            <h2 class="section-title">Student / Teacher Information Retrieved</h2>
+            <div class="kv">
+                <div class="kv-item"><small>Student ID</small><div class="value" id="dispID">--</div></div>
+                <div class="kv-item"><small>Full Name</small><div class="value" id="dispName">--</div></div>
+                <div class="kv-item"><small>Email</small><div class="value" id="dispEmail">--</div></div>
+                <div class="kv-item"><small>Age</small><div class="value" id="dispAge">--</div></div>
+                <div class="kv-item"><small>Year Level</small><div class="value" id="dispYear">--</div></div>
+                <div class="kv-item"><small>Course / Strand</small><div class="value" id="dispCourse">--</div></div>
+                <div class="kv-item"><small>Address</small><div class="value" id="dispAddress">--</div></div>
+                <div class="kv-item"><small>Last Attendance</small><div class="value" id="dispLastAttendance">--</div></div>
+                <div class="kv-item"><small>Time</small><div class="value" id="dispTime">--:--:--</div></div>
+                <div class="kv-item"><small>Status</small><div class="value" id="dispStatus">--</div></div>
+                <div class="kv-item"><small>Barcode Value</small><div class="value" id="dispBarcode">--</div></div>
+            </div>
+            <div class="message" id="successMsg">Ready to scan student attendance.</div>
+            <div class="message" id="borrowNotice"></div>
+        </div>
+
+    </section>
+</main>
+
+<div class="statusbar" id="statusBar">Connecting to database...</div>
+
+<div class="dialog" id="registerDialog">
+    <div class="dialog-card">
+        <h3 style="margin:0 0 12px">Register Student</h3>
+        <div class="form-stack">
+            <input type="text" id="studentId" class="text-input" placeholder="Student ID" readonly>
+            <input type="text" id="studentName" class="text-input" placeholder="Full Name">
+            <input type="email" id="studentEmail" class="text-input" placeholder="Student Email">
+            <input type="number" id="studentAge" class="number-input" placeholder="Age">
+            <select id="studentYear" class="text-input">
+                <option value="">Select Year Level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+            <select id="studentCourse" class="text-input">
+                <option value="">Select Course</option>
+                <option value="BSCPE">BSCPE</option>
+                <option value="BSIT">BSIT</option>
+                <option value="BECED">BECED</option>
+                <option value="BSED SCI">BSED SCI</option>
+                <option value="BEED GEN">BEED GEN</option>
+                <option value="BSBA HRM">BSBA HRM</option>
+                <option value="BS ENTREP">BS ENTREP</option>
+                <option value="BS ENTREP">BTLED ICT</option>
+            </select>
+            <input type="text" id="studentAddress" class="text-input" placeholder="Address">
+        </div>
+        <p class="note" style="margin-top:12px">Use a real email address here. The system will try to send the barcode immediately after registration if SMTP is configured.</p>
+        <div class="form-actions">
+            <button class="btn success" onclick="submitRegistration()">Register</button>
+            <button class="btn gray" onclick="closeRegisterDialog()">Close</button>
+        </div>
+    </div>
+
+</div>
+
+<div class="dialog" id="registerTeacherDialog">
+    <div class="dialog-card">
+        <h3 style="margin:0 0 12px">Register Teacher</h3>
+        <div class="form-stack">
+            <input type="text" id="teacherId" class="text-input" placeholder="Teacher ID" readonly>
+            <input type="text" id="teacherName" class="text-input" placeholder="Full Name">
+            <input type="email" id="teacherEmail" class="text-input" placeholder="Teacher Email">
+            <input type="text" id="teacherDepartment" class="text-input" placeholder="Department">
+            <input type="text" id="teacherAddress" class="text-input" placeholder="Address">
+        </div>
+        <p class="note" style="margin-top:12px">Teachers can also receive their barcode by email after registration if SMTP is configured.</p>
+        <div class="form-actions">
+            <button class="btn success" onclick="submitTeacherRegistration()">Register</button>
+            <button class="btn gray" onclick="closeRegisterTeacherDialog()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="dialog" id="attendanceDialog">
+    <div class="dialog-card" style="width:min(1100px,100%)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div>
+                <h3 style="margin:0">Attendance Records</h3>
+                <div class="note">Live data from the Flask MySQL backend.</div>
+            </div>
+            <div class="action-stack">
+                <button class="btn gray" onclick="loadAttendance()">Refresh</button>
+                <button class="btn warning" onclick="clearAttendanceToday()">Clear Today</button>
+                <button class="btn danger" onclick="clearAttendanceAll()">Clear All</button>
+                <button class="btn danger" onclick="toggleAttendanceTable(false)">Close</button>
+            </div>
+        </div>
+        <div class="table-wrap" style="max-height:65vh">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Student ID</th>
+                        <th>Barcode</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                        <th>Last Action</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="dialog" id="teachersDialog">
+    <div class="dialog-card" style="width:min(1100px,100%)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div>
+                <h3 style="margin:0">Registered Teachers</h3>
+                <div class="note">List of all registered teachers in the database.</div>
+            </div>
+            <div class="action-stack">
+                <button class="btn gray" onclick="loadTeachers()">Refresh</button>
+                <button class="btn danger" onclick="toggleTeachersDialog(false)">Close</button>
+            </div>
+        </div>
+        <div class="table-wrap" style="max-height:65vh">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Teacher ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Barcode</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="teacherTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+let currentBarcodeValue = '';
+let allStudents = [];
+let selectedStudentId = null;
+let allBooks = [];
+let allBorrowings = [];
+let allTeachers = [];
+let selectedBorrowingId = null;
+let selectedTeacherId = null;
+let selectedBookId = null;
+
+const socket = typeof io !== 'undefined' ? io() : null;
+
+const statusBar = document.getElementById('statusBar');
+const systemDot = document.getElementById('systemDot');
+const systemLabel = document.getElementById('systemLabel');
+const scanInput = document.getElementById('scanInput');
+const studentSearch = document.getElementById('studentSearch');
+
+function setStatus(text, type = 'idle') {
+    statusBar.textContent = text;
+    systemLabel.textContent = text;
+    systemDot.className = 'dot';
+    if (type === 'live') systemDot.classList.add('live');
+    if (type === 'scan') systemDot.classList.add('scan');
+    if (type === 'error') systemDot.classList.add('error');
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatDateTime(value) {
+    if (!value) return '--';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+}
+
+function isPastDue(dueDate, returnDate = null) {
+    if (!dueDate || returnDate) return false;
+    const due = new Date(dueDate);
+    if (Number.isNaN(due.getTime())) return false;
+    return due < new Date();
+}
+
+function renderBorrowNotice(books = []) {
+    const notice = document.getElementById('borrowNotice');
+    if (!notice) return;
+
+    if (!books.length) {
+        notice.style.display = 'none';
+        notice.innerHTML = '';
+        return;
+    }
+
+    notice.style.display = 'block';
+    notice.innerHTML =
+        `<strong>Library Notice:</strong><br>` +
+        books.map(book => {
+            return `${escapeHtml(book.title || '--')} (${escapeHtml(book.book_code || '--')}) - Due: ${escapeHtml(formatDateTime(book.due_date))} - ${escapeHtml(book.status || 'BORROWED')}`;
+        }).join('<br>');
+}
+
+function resetDisplay() {
+    ['dispID','dispName','dispEmail','dispAge','dispYear','dispCourse','dispAddress','dispLastAttendance','dispTime','dispStatus','dispBarcode']
+        .forEach(id => document.getElementById(id).textContent = id === 'dispTime' ? '--:--:--' : '--');
+    updateBarcodePreview('');
+    renderBorrowNotice([]);
+}
+
+function normalizeStudent(student = {}, record = null) {
+    return {
+        id: student.id || student.studentId || student.student_id || '--',
+        name: student.name || student.fullName || student.full_name || '--',
+        email: student.email || '--',
+        age: student.age ?? '--',
+        year: student.year || student.yearLevel || student.year_level || '--',
+        course: student.course || student.courseStrand || '--',
+        address: student.address || '--',
+        barcode: student.barcode || student.barcodeValue || student.barcode_value || student.studentId || student.student_id || student.id || '--',
+        status: record?.status || student.status || '--',
+        lastAttendance: record?.date || student.lastAttendance || student.last_attendance || '--'
+    };
+}
+
+function fillDisplay(student, record = null) {
+    const data = normalizeStudent(student, record);
+    document.getElementById('dispID').textContent = data.id;
+    document.getElementById('dispName').textContent = data.name;
+    document.getElementById('dispEmail').textContent = data.email;
+    document.getElementById('dispAge').textContent = data.age;
+    document.getElementById('dispYear').textContent = data.year;
+    document.getElementById('dispCourse').textContent = data.course;
+    document.getElementById('dispAddress').textContent = data.address;
+    document.getElementById('dispLastAttendance').textContent = data.lastAttendance;
+    document.getElementById('dispTime').textContent = record?.timeIn || record?.timeOut || record?.time_in || record?.time_out || '--:--:--';
+    document.getElementById('dispStatus').textContent = data.status;
+    document.getElementById('dispBarcode').textContent = data.barcode;
+    updateBarcodePreview(data.barcode === '--' ? '' : data.barcode);
+}
+
+function fillTeacherDisplay(teacher = {}) {
+    document.getElementById('dispID').textContent = teacher.id || teacher.teacherId || '--';
+    document.getElementById('dispName').textContent = teacher.name || teacher.fullName || teacher.full_name || '--';
+    document.getElementById('dispEmail').textContent = teacher.email || '--';
+    document.getElementById('dispAge').textContent = '--';
+    document.getElementById('dispYear').textContent = teacher.department || '--';
+    document.getElementById('dispCourse').textContent = 'Teacher';
+    document.getElementById('dispAddress').textContent = teacher.address || '--';
+    document.getElementById('dispLastAttendance').textContent = '--';
+    document.getElementById('dispTime').textContent = '--:--:--';
+    document.getElementById('dispStatus').textContent = teacher.status || 'Active';
+    const barcode = teacher.barcode || teacher.barcodeValue || teacher.barcode_value || teacher.id || teacher.teacherId || '';
+    document.getElementById('dispBarcode').textContent = barcode || '--';
+    updateBarcodePreview(barcode);
+}
+
+function updateBarcodePreview(barcodeValue) {
+    currentBarcodeValue = (barcodeValue || '').trim();
+    const frame = document.getElementById('barcodeFrame');
+    const label = document.getElementById('barcodeLabel');
+
+    if (!currentBarcodeValue) {
+        label.textContent = 'No barcode selected';
+        frame.innerHTML = '<div class="barcode-empty">Scan or select a student, teacher, or book first.<br>SVG is best for printing. PNG is best for phone display.</div>';
+        return;
+    }
+
+    label.textContent = `Barcode: ${currentBarcodeValue}`;
+    frame.innerHTML = `<img src="/api/barcode/${encodeURIComponent(currentBarcodeValue)}.svg?t=${Date.now()}" alt="Barcode ${escapeHtml(currentBarcodeValue)}">`;
+}
+
+function downloadDisplayedBarcode(format) {
+    if (!currentBarcodeValue) {
+        setStatus('No barcode selected yet.', 'error');
+        return;
+    }
+    window.open(`/api/barcode/${encodeURIComponent(currentBarcodeValue)}.${format}`, '_blank');
+}
+
+async function fetchJson(url, options = {}) {
+    const response = await fetch(url, options);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || `Request failed: ${response.status}`);
+    return data;
+}
+
+async function loadNextStudentId() {
+    try {
+        const data = await fetchJson('/api/student-id/next');
+        document.getElementById('studentId').value = data.studentId || '';
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function loadNextTeacherId() {
+    try {
+        const data = await fetchJson('/api/teacher-id/next');
+        document.getElementById('teacherId').value = data.teacherId || '';
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+function renderTeachers(teachers) {
+    const tbody = document.getElementById('teacherTableBody');
+    if (!tbody) return;
+
+    if (!teachers.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No teachers registered yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = teachers.map((teacher, index) => {
+        const teacherId = teacher.id || teacher.teacherId || '';
+        const barcodeValue = encodeURIComponent(teacher.barcode || teacher.barcodeValue || teacher.barcode_value || teacherId || '');
+        const rowClass = `${selectedTeacherId === teacherId ? 'student-row selected-row' : 'student-row'}`;
+
+        return `
+            <tr class="${rowClass}" onclick='selectTeacherRow(${JSON.stringify(teacherId)})'>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(teacherId)}</td>
+                <td>${escapeHtml(teacher.name || teacher.fullName || '--')}</td>
+                <td>${escapeHtml(teacher.email || '--')}</td>
+                <td>${escapeHtml(teacher.department || '--')}</td>
+                <td>${escapeHtml(teacher.barcode || teacher.barcodeValue || teacher.barcode_value || '--')}</td>
+                <td>${escapeHtml(teacher.status || 'Active')}</td>
+                <td>
+                    <div class="action-stack">
+                        <button class="btn gray" onclick="event.stopPropagation(); window.open('/api/barcode/${barcodeValue}.svg','_blank')">SVG</button>
+                        <button class="btn gray" onclick="event.stopPropagation(); window.open('/api/barcode/${barcodeValue}.png','_blank')">PNG</button>
+                        <button class="btn danger" onclick='event.stopPropagation(); deleteTeacher(${JSON.stringify(teacherId)})'>Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function selectTeacherRow(teacherId) {
+    const teacher = allTeachers.find(t => String(t.id || t.teacherId) === String(teacherId));
+    if (!teacher) return;
+
+    selectedTeacherId = teacher.id || teacher.teacherId;
+    fillTeacherDisplay(teacher);
+    renderTeachers(allTeachers);
+    document.getElementById('successMsg').textContent = `Showing information for ${teacher.name || teacher.fullName || teacherId}.`;
+    setStatus(`Selected ${teacher.name || teacher.fullName || teacherId}`, 'live');
+}
+
+async function loadTeachers() {
+    const tbody = document.getElementById('teacherTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Loading teachers...</td></tr>';
+
+    try {
+        const data = await fetchJson('/api/teachers');
+        allTeachers = data.teachers || [];
+
+        if (selectedTeacherId && !allTeachers.some(teacher => String(teacher.id || teacher.teacherId) === String(selectedTeacherId))) {
+            selectedTeacherId = null;
+        }
+
+        renderTeachers(allTeachers);
+        updateDashboardStats();
+    } catch (error) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="empty-row">${escapeHtml(error.message)}</td></tr>`;
+        setStatus(error.message, 'error');
+    }
+}
+
+function getFilteredStudents() {
+    const query = (studentSearch.value || '').trim().toLowerCase();
+
+    if (!query) return allStudents;
+
+    return allStudents.filter(student => {
+        const searchableText = [
+            student.id,
+            student.name,
+            student.email,
+            student.age,
+            student.year,
+            student.course,
+            student.address,
+            student.barcode
+        ].map(value => String(value ?? '').toLowerCase()).join(' ');
+
+        return searchableText.includes(query);
+    });
+}
+
+function renderStudents(students) {
+    const tbody = document.getElementById('studentTableBody');
+
+    if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No matching students found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = students.map((student, index) => {
+        const isOverdueStudent = !!(student.hasOverdueBooks || student.has_overdue_books);
+        const rowClass = `${selectedStudentId === student.id ? 'student-row selected-row' : 'student-row'}${isOverdueStudent ? ' overdue-row' : ''}`;
+        const barcodeValue = encodeURIComponent(student.barcode || student.id || '');
+
+        return `
+            <tr class="${rowClass}" onclick='selectStudentRow(${JSON.stringify(student.id || "")})'>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(student.id)}</td>
+                <td>${escapeHtml(student.name)}</td>
+                <td>${escapeHtml(student.email || '--')}</td>
+                <td>${escapeHtml(student.age ?? '--')}</td>
+                <td>${escapeHtml(student.year || '--')}</td>
+                <td>${escapeHtml(student.barcode || '--')}</td>
+                <td>
+                    <div class="action-stack">
+                        <button class="btn gray" onclick="event.stopPropagation(); window.open('/api/barcode/${barcodeValue}.svg','_blank')">SVG</button>
+                        <button class="btn gray" onclick="event.stopPropagation(); window.open('/api/barcode/${barcodeValue}.png','_blank')">PNG</button>
+                        <button class="btn success" onclick='event.stopPropagation(); resendBarcodeEmail(${JSON.stringify(student.id || "")})'>Email Barcode</button>
+                        <button class="btn warning" onclick='event.stopPropagation(); editStudentEmail(${JSON.stringify(student.id || "")}, ${JSON.stringify(student.email || "")})'>Edit Email</button>
+                        <button class="btn danger" onclick='event.stopPropagation(); deleteStudent(${JSON.stringify(student.id || "")})'>Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterStudents() {
+    renderStudents(getFilteredStudents());
+}
+
+function selectStudentRow(studentId) {
+    const student = allStudents.find(s => String(s.id) === String(studentId));
+    if (!student) return;
+
+    selectedStudentId = student.id;
+    fillDisplay(student);
+    renderStudents(getFilteredStudents());
+
+    document.getElementById('successMsg').textContent = `Showing information for ${student.name || student.id}.`;
+    setStatus(`Selected ${student.name || student.id}`, 'live');
+}
+
+async function loadStudents() {
+    const tbody = document.getElementById('studentTableBody');
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Loading students...</td></tr>';
+
+    try {
+        const data = await fetchJson('/api/students');
+        allStudents = data.students || [];
+        document.getElementById('metaStudents').textContent = allStudents.length;
+
+        if (selectedStudentId && !allStudents.some(student => String(student.id) === String(selectedStudentId))) {
+            selectedStudentId = null;
+            resetDisplay();
+        }
+
+        renderStudents(getFilteredStudents());
+        updateDashboardStats();
+
+        if (!allStudents.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No students registered yet.</td></tr>';
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-row">${escapeHtml(error.message)}</td></tr>`;
+        setStatus(error.message, 'error');
+    }
+}
+
+function statusBadge(status) {
+    const value = String(status || '--').toUpperCase();
+    const cls = value === 'OPEN' ? 'open' : (value === 'COMPLETED' ? 'completed' : 'timeout');
+    return `<span class="badge ${cls}">${escapeHtml(value)}</span>`;
+}
+
+async function loadAttendance() {
+    const tbody = document.getElementById('attendanceTableBody');
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-row">Loading attendance...</td></tr>';
+
+    try {
+        const data = await fetchJson('/api/attendance');
+        const attendance = data.attendance || [];
+        document.getElementById('metaRecords').textContent = attendance.length;
+
+        if (!attendance.length) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-row">No attendance records yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = attendance.map((record, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(record.studentId || record.student_id)}</td>
+                <td>${escapeHtml(record.barcode || record.barcode_value || '--')}</td>
+                <td>${escapeHtml(record.name || record.full_name || '--')}</td>
+                <td>${escapeHtml(record.date || '--')}</td>
+                <td>${escapeHtml(record.timeIn || record.time_in || '--')}</td>
+                <td>${escapeHtml(record.timeOut || record.time_out || '--')}</td>
+                <td>${escapeHtml(record.lastAction || record.last_action || '--')}</td>
+                <td>${statusBadge(record.status)}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty-row">${escapeHtml(error.message)}</td></tr>`;
+        setStatus(error.message, 'error');
+    }
+}
+
+async function submitScanCode() {
+    const code = scanInput.value.trim();
+    if (!code) {
+        setStatus('Please scan a barcode or enter a student ID.', 'error');
+        scanInput.focus();
+        return;
+    }
+
+    try {
+        setStatus('Processing scan...', 'scan');
+        const data = await fetchJson('/api/scan-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+
+        if (data.student) {
+            selectedStudentId = data.student.id || data.student.studentId || data.student.student_id || null;
+            fillDisplay(data.student, data.attendance || data.record || null);
+        }
+
+        renderBorrowNotice(data.unreturned_books || []);
+        if (data.has_unreturned_books) {
+            setStatus('Student has unreturned book(s).', 'error');
+        }
+
+        document.getElementById('successMsg').textContent = data.message || 'Attendance recorded successfully.';
+        scanInput.value = '';
+        scanInput.focus();
+
+        await loadStudents();
+        await loadAttendance();
+        await loadBooks();
+        await loadBorrowings();
+
+        if (!data.has_unreturned_books) {
+            setStatus(data.message || 'Attendance updated.', 'live');
+        }
+    } catch (error) {
+        document.getElementById('successMsg').textContent = error.message;
+        renderBorrowNotice([]);
+        setStatus(error.message, 'error');
+        scanInput.select();
+    }
+}
+
+function openRegisterDialog() {
+    document.getElementById('registerDialog').classList.add('open');
+    loadNextStudentId();
+}
+
+function closeRegisterDialog() {
+    document.getElementById('registerDialog').classList.remove('open');
+}
+
+function openRegisterTeacherDialog() {
+    document.getElementById('registerTeacherDialog').classList.add('open');
+    loadNextTeacherId();
+}
+
+function closeRegisterTeacherDialog() {
+    document.getElementById('registerTeacherDialog').classList.remove('open');
+}
+
+function toggleAttendanceTable(forceState = null) {
+    const dialog = document.getElementById('attendanceDialog');
+    const shouldOpen = forceState === null ? !dialog.classList.contains('open') : !!forceState;
+    dialog.classList.toggle('open', shouldOpen);
+    if (shouldOpen) loadAttendance();
+}
+
+function toggleTeachersDialog(forceState = null) {
+    const dialog = document.getElementById('teachersDialog');
+    const shouldOpen = forceState === null ? !dialog.classList.contains('open') : !!forceState;
+    dialog.classList.toggle('open', shouldOpen);
+    if (shouldOpen) loadTeachers();
+}
+
+function openAttendancePage() {
+    window.open('/attendance', '_blank');
+}
+
+async function submitRegistration() {
+    const payload = {
+        id: document.getElementById('studentId').value.trim(),
+        name: document.getElementById('studentName').value.trim(),
+        email: document.getElementById('studentEmail').value.trim(),
+        age: document.getElementById('studentAge').value.trim(),
+        year: document.getElementById('studentYear').value.trim(),
+        course: document.getElementById('studentCourse').value.trim(),
+        address: document.getElementById('studentAddress').value.trim()
+    };
+
+    if (!payload.name || !payload.email || !payload.age || !payload.year || !payload.course) {
+        setStatus('Name, email, age, year level, and course are required.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson('/api/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        document.getElementById('successMsg').textContent = data.message || 'Student registered successfully.';
+
+        if (data.student) {
+            selectedStudentId = data.student.id || data.student.studentId || data.student.student_id || null;
+            fillDisplay(data.student);
+        }
+
+        setStatus(data.message || 'Student registration completed.', 'live');
+
+        ['studentName','studentEmail','studentAge','studentYear','studentCourse','studentAddress'].forEach(id => document.getElementById(id).value = '');
+
+        await loadNextStudentId();
+        await loadStudents();
+        closeRegisterDialog();
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+
+async function submitTeacherRegistration() {
+    const payload = {
+        id: document.getElementById('teacherId').value.trim(),
+        name: document.getElementById('teacherName').value.trim(),
+        email: document.getElementById('teacherEmail').value.trim(),
+        department: document.getElementById('teacherDepartment').value.trim(),
+        address: document.getElementById('teacherAddress').value.trim()
+    };
+
+    if (!payload.name || !payload.email) {
+        setStatus('Teacher name and email are required.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson('/api/teachers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        document.getElementById('successMsg').textContent = data.message || 'Teacher registered successfully.';
+
+        if (data.teacher) {
+            updateBarcodePreview(data.teacher.barcode || data.teacher.id || '');
+            document.getElementById('dispID').textContent = data.teacher.id || '--';
+            document.getElementById('dispName').textContent = data.teacher.name || '--';
+            document.getElementById('dispEmail').textContent = data.teacher.email || '--';
+            document.getElementById('dispAge').textContent = '--';
+            document.getElementById('dispYear').textContent = data.teacher.department || '--';
+            document.getElementById('dispCourse').textContent = 'Teacher';
+            document.getElementById('dispAddress').textContent = data.teacher.address || '--';
+            document.getElementById('dispLastAttendance').textContent = '--';
+            document.getElementById('dispTime').textContent = '--:--:--';
+            document.getElementById('dispStatus').textContent = data.teacher.status || 'Active';
+            document.getElementById('dispBarcode').textContent = data.teacher.barcode || '--';
+        }
+
+        ['teacherName', 'teacherEmail', 'teacherDepartment', 'teacherAddress'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+
+        await loadNextTeacherId();
+        await loadTeachers();
+        closeRegisterTeacherDialog();
+        setStatus(data.message || 'Teacher registration completed.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+
+async function editStudentEmail(studentId, currentEmail) {
+    const nextEmail = prompt(`Enter a new email for ${studentId}:`, currentEmail || '');
+    if (nextEmail === null) return;
+
+    try {
+        const data = await fetchJson(`/api/students/${encodeURIComponent(studentId)}/email`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: nextEmail })
+        });
+
+        if (data.student) {
+            selectedStudentId = data.student.id || data.student.studentId || data.student.student_id || selectedStudentId;
+            fillDisplay(data.student);
+        }
+
+        document.getElementById('successMsg').textContent = data.message || 'Email updated successfully.';
+        await loadStudents();
+        setStatus(data.message || 'Student email updated.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function resendBarcodeEmail(studentId) {
+    try {
+        const data = await fetchJson(`/api/students/${encodeURIComponent(studentId)}/email-barcode`, { method: 'POST' });
+        document.getElementById('successMsg').textContent = data.message || 'Barcode email sent.';
+
+        if (data.student) {
+            selectedStudentId = data.student.id || data.student.studentId || data.student.student_id || selectedStudentId;
+            fillDisplay(data.student);
+        }
+
+        setStatus(data.message || 'Barcode email sent.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function deleteStudent(studentId) {
+    if (!confirm(`Delete student ${studentId}?`)) return;
+
+    try {
+        const data = await fetchJson(`/api/students/${encodeURIComponent(studentId)}`, { method: 'DELETE' });
+        document.getElementById('successMsg').textContent = data.message || 'Student deleted.';
+
+        if (String(selectedStudentId) === String(studentId)) {
+            selectedStudentId = null;
+            resetDisplay();
+        }
+
+        await loadStudents();
+        await loadAttendance();
+        setStatus('Student removed.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function deleteTeacher(teacherId) {
+    if (!confirm(`Delete teacher ${teacherId}?`)) return;
+
+    try {
+        const data = await fetchJson(`/api/teachers/${encodeURIComponent(teacherId)}`, { method: 'DELETE' });
+        document.getElementById('successMsg').textContent = data.message || 'Teacher deleted.';
+
+        if (String(selectedTeacherId) === String(teacherId)) {
+            selectedTeacherId = null;
+            resetDisplay();
+        }
+
+        await loadTeachers();
+        setStatus(data.message || 'Teacher removed.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function clearAttendanceToday() {
+    try {
+        const data = await fetchJson('/api/attendance/today', { method: 'DELETE' });
+        await loadAttendance();
+        setStatus(data.message || 'Today\'s attendance cleared.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function clearAttendanceAll() {
+    const ok = confirm('Clear ALL attendance records? This cannot be undone.');
+    if (!ok) return;
+
+    try {
+        const data = await fetchJson('/api/attendance/clear-all', { method: 'DELETE' });
+        await loadAttendance();
+        document.getElementById('metaRecords').textContent = '0';
+        document.getElementById('successMsg').textContent = data.message || 'All attendance records cleared.';
+        setStatus(data.message || 'All attendance records cleared.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+function setDefaultBorrowDueDate() {
+    const input = document.getElementById('borrowDueDate');
+    if (!input) return;
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+    input.value = local;
+}
+
+function toggleLibraryDrawer(forceState = null) {
+    const drawer = document.getElementById('libraryDrawer');
+    const shouldOpen = forceState === null ? !drawer.classList.contains('open') : !!forceState;
+    drawer.classList.toggle('open', shouldOpen);
+    if (shouldOpen) setDefaultBorrowDueDate();
+}
+
+async function loadNextBookId() {
+    try {
+        const data = await fetchJson('/api/book-id/next');
+        document.getElementById('bookId').value = data.bookId || '';
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+function hidePanelsForBookRegister() {
+    toggleLibraryDrawer(false);
+    toggleBarcodeDrawer(false);
+    toggleBooksDialog(false);
+    toggleBorrowingsDialog(false);
+    toggleAttendanceTable(false);
+    toggleTeachersDialog(false);
+    toggleAboutDrawer(false);
+}
+
+function openBookRegisterDialog() {
+    hidePanelsForBookRegister();
+    document.getElementById('registerBookDialog').classList.add('open');
+    resetRegisterBookForm();
+    loadNextBookId();
+}
+
+function closeBookRegisterDialog() {
+    document.getElementById('registerBookDialog').classList.remove('open');
+}
+
+function toggleBooksDialog(forceState = null) {
+    const dialog = document.getElementById('booksDialog');
+    const shouldOpen = forceState === null ? !dialog.classList.contains('open') : !!forceState;
+    dialog.classList.toggle('open', shouldOpen);
+    if (shouldOpen) loadBooks();
+}
+
+function toggleBorrowingsDialog(forceState = null) {
+    const dialog = document.getElementById('borrowingsDialog');
+    const shouldOpen = forceState === null ? !dialog.classList.contains('open') : !!forceState;
+    dialog.classList.toggle('open', shouldOpen);
+    if (shouldOpen) loadBorrowings();
+}
+
+function updateBorrowerPlaceholder() {
+    const type = document.getElementById('borrowerType')?.value || 'STUDENT';
+    const input = document.getElementById('borrowBorrowerScan');
+    if (!input) return;
+
+    input.placeholder = type === 'TEACHER'
+        ? 'Scan teacher barcode next'
+        : 'Scan student barcode next';
+}
+
+function toggleBarcodeDrawer(forceState = null) {
+    const drawer = document.getElementById('barcodeDrawer');
+    if (!drawer) return;
+    const shouldOpen = forceState === null ? !drawer.classList.contains('open') : !!forceState;
+    drawer.classList.toggle('open', shouldOpen);
+}
+
+function toggleAboutDrawer(forceState = null) {
+    const drawer = document.getElementById('aboutDrawer');
+    if (!drawer) return;
+    const shouldOpen = forceState === null ? !drawer.classList.contains('open') : !!forceState;
+    drawer.classList.toggle('open', shouldOpen);
+}
+
+function populateBorrowCategoryOptions() {
+    const select = document.getElementById('borrowCategoryFilter');
+    if (!select) return;
+
+    const previousValue = select.value || '';
+    const categories = [...new Set(
+        allBooks
+            .map(book => String(book.category || '').trim())
+            .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+
+    select.innerHTML = '<option value="">Choose Category</option>' +
+        '<option value="__ALL__">All Categories</option>' +
+        categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+
+    if ([...select.options].some(option => option.value === previousValue)) {
+        select.value = previousValue;
+    }
+}
+
+function renderBorrowBookOptions() {
+    const select = document.getElementById('borrowBookList');
+    const category = document.getElementById('borrowCategoryFilter')?.value || '';
+    if (!select) return;
+
+    let filteredBooks = [...allBooks];
+    if (category && category !== '__ALL__') {
+        filteredBooks = filteredBooks.filter(book => String(book.category || '').trim() === category);
+    }
+
+    filteredBooks.sort((a, b) => {
+        const aAvailable = String(a.status || '').toUpperCase() === 'AVAILABLE' ? 0 : 1;
+        const bAvailable = String(b.status || '').toUpperCase() === 'AVAILABLE' ? 0 : 1;
+        if (aAvailable !== bAvailable) return aAvailable - bAvailable;
+        return String(a.title || '').localeCompare(String(b.title || ''));
+    });
+
+    if (!filteredBooks.length) {
+        select.innerHTML = '<option value="">No books found for this category</option>';
+        return;
+    }
+
+    select.innerHTML = '<option value="">Choose Book</option>' + filteredBooks.map(book => {
+        const value = escapeHtml(book.barcode_value || book.barcode || book.book_id || book.bookId || '');
+        const title = escapeHtml(book.title || 'Untitled Book');
+        const author = escapeHtml(book.author || 'Unknown Author');
+        const status = escapeHtml(book.status || 'UNKNOWN');
+        return `<option value="${value}">${title} - ${author} (${status})</option>`;
+    }).join('');
+}
+
+function handleBorrowCategoryChange() {
+    renderBorrowBookOptions();
+    const select = document.getElementById('borrowBookList');
+    if (select) select.value = '';
+    document.getElementById('borrowBookScan').value = '';
+    resetBorrowBookInfo();
+}
+
+function selectBorrowBookFromList() {
+    const select = document.getElementById('borrowBookList');
+    const input = document.getElementById('borrowBookScan');
+    if (!select || !input) return;
+
+    input.value = select.value || '';
+    if (input.value.trim()) {
+        lookupBorrowBookInfo();
+    } else {
+        resetBorrowBookInfo();
+    }
+}
+
+function borrowingStatusBadge(status, dueDate, returnDate) {
+    const now = new Date();
+    const due = dueDate ? new Date(dueDate) : null;
+    let cls = 'borrowed';
+    let label = String(status || '--').toUpperCase();
+
+    if (label === 'RETURNED') {
+        cls = 'returned';
+    } else if (due && due < now && !returnDate) {
+        cls = 'overdue';
+        label = 'OVERDUE';
+    }
+
+    return `<span class="borrowing-status ${cls}">${escapeHtml(label)}</span>`;
+}
+
+function resetBorrowBookInfo() {
+    ['borrowInfoBookTitle','borrowInfoBookStatus','borrowInfoBorrowerName','borrowInfoBorrowerId','borrowInfoBorrowerEmail','borrowInfoDueDate']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+}
+
+function fillBorrowBookInfo(payload = {}) {
+    const book = payload.book || {};
+    const borrowing = payload.currentBorrowing || payload.current_borrowing || null;
+
+    if (document.getElementById('borrowInfoBookTitle')) {
+        document.getElementById('borrowInfoBookTitle').textContent = book.title || '--';
+    }
+    if (document.getElementById('borrowInfoBookStatus')) {
+        document.getElementById('borrowInfoBookStatus').textContent =
+            borrowing ? (borrowing.status || 'BORROWED') : (book.status || 'AVAILABLE');
+    }
+    if (document.getElementById('borrowInfoBorrowerName')) {
+        document.getElementById('borrowInfoBorrowerName').textContent =
+            borrowing?.borrower_name || borrowing?.borrowerName || '--';
+    }
+    if (document.getElementById('borrowInfoBorrowerId')) {
+        document.getElementById('borrowInfoBorrowerId').textContent =
+            borrowing?.borrower_id || borrowing?.borrowerId || '--';
+    }
+    if (document.getElementById('borrowInfoBorrowerEmail')) {
+        document.getElementById('borrowInfoBorrowerEmail').textContent =
+            borrowing?.borrower_email || borrowing?.borrowerEmail || '--';
+    }
+    if (document.getElementById('borrowInfoDueDate')) {
+        const dueDate = borrowing?.due_date || borrowing?.dueDate || null;
+        document.getElementById('borrowInfoDueDate').textContent = dueDate ? formatDateTime(dueDate) : '--';
+    }
+}
+
+async function lookupBorrowBookInfo() {
+    const code = document.getElementById('borrowBookScan').value.trim();
+    if (!code) {
+        resetBorrowBookInfo();
+        setStatus('Scan the book barcode first.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson(`/api/books/lookup?code=${encodeURIComponent(code)}`);
+        fillBorrowBookInfo(data);
+        if (data.book?.barcode_value || data.book?.barcode) updateBarcodePreview(data.book.barcode_value || data.book.barcode);
+        setStatus(data.message || 'Book information loaded.', 'live');
+    } catch (error) {
+        resetBorrowBookInfo();
+        setStatus(error.message, 'error');
+    }
+}
+
+function handleRegisterBookCategoryChange() {
+    const categorySelect = document.getElementById('bookCategory');
+    const customInput = document.getElementById('bookCategoryCustom');
+    if (!categorySelect || !customInput) return;
+
+    const isOther = categorySelect.value === 'Other';
+    customInput.style.display = isOther ? 'block' : 'none';
+    if (!isOther) customInput.value = '';
+}
+
+function getSelectedBookCategoryValue() {
+    const categorySelect = document.getElementById('bookCategory');
+    const customInput = document.getElementById('bookCategoryCustom');
+    if (!categorySelect) return '';
+
+    if (categorySelect.value === 'Other') {
+        return (customInput?.value || '').trim();
+    }
+
+    return (categorySelect.value || '').trim();
+}
+
+function resetRegisterBookForm() {
+    const categorySelect = document.getElementById('bookCategory');
+    const customInput = document.getElementById('bookCategoryCustom');
+
+    ['bookTitle','bookAuthor'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+    });
+
+    if (categorySelect) categorySelect.value = '';
+    if (customInput) {
+        customInput.value = '';
+        customInput.style.display = 'none';
+    }
+}
+
+async function submitBookRegistration() {
+    const payload = {
+        book_id: document.getElementById('bookId').value.trim(),
+        title: document.getElementById('bookTitle').value.trim(),
+        author: document.getElementById('bookAuthor').value.trim(),
+        category: getSelectedBookCategoryValue()
+    };
+
+    if (!payload.title || !payload.category) {
+        setStatus('Book title and category are required.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson('/api/books', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        updateBarcodePreview(data.barcodeValue || payload.book_id);
+        document.getElementById('successMsg').textContent = data.message || 'Book registered.';
+        resetRegisterBookForm();
+        await loadBooks();
+        closeBookRegisterDialog();
+        setStatus(data.message || 'Book registered.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function submitBorrowBook() {
+    const payload = {
+        book_code: document.getElementById('borrowBookScan').value.trim(),
+        borrower_type: document.getElementById('borrowerType').value,
+        borrower_code: document.getElementById('borrowBorrowerScan').value.trim(),
+        due_date: document.getElementById('borrowDueDate').value
+    };
+
+    if (!payload.book_code || !payload.borrower_type || !payload.borrower_code || !payload.due_date) {
+        setStatus('Book scan, borrower type, borrower scan, and due date are required.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson('/api/borrowings/issue', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        document.getElementById('successMsg').textContent = data.message || 'Book borrowed successfully.';
+        setStatus(data.message || 'Book borrowed successfully.', 'live');
+        document.getElementById('borrowBookScan').value = '';
+        document.getElementById('borrowBorrowerScan').value = '';
+        document.getElementById('borrowerType').value = 'STUDENT';
+        const borrowBookList = document.getElementById('borrowBookList');
+        if (borrowBookList) borrowBookList.value = '';
+        updateBorrowerPlaceholder();
+        resetBorrowBookInfo();
+        setDefaultBorrowDueDate();
+        await loadBooks();
+        await loadBorrowings();
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+async function submitReturnBook() {
+    const payload = {
+        book_code: document.getElementById('borrowBookScan').value.trim()
+    };
+
+    if (!payload.book_code) {
+        setStatus('Scan the book barcode first.', 'error');
+        return;
+    }
+
+    try {
+        const data = await fetchJson('/api/borrowings/return', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        document.getElementById('successMsg').textContent = data.message || 'Book returned successfully.';
+        setStatus(data.message || 'Book returned successfully.', 'live');
+        document.getElementById('borrowBookScan').value = '';
+        const borrowBookList = document.getElementById('borrowBookList');
+        if (borrowBookList) borrowBookList.value = '';
+        resetBorrowBookInfo();
+        await loadBooks();
+        await loadBorrowings();
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+function renderBooks(books) {
+    const tbody = document.getElementById('booksTableBody');
+    if (!tbody) return;
+
+    if (!books.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-row">No books registered yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = books.map((book, index) => {
+        const overdueBook = String(book.status || '').toUpperCase() === 'OVERDUE' || isPastDue(book.due_date || book.dueDate, null);
+        const bookId = String(book.book_id || book.bookId || '');
+        const rowClass = `${selectedBookId === bookId ? 'student-row selected-row' : 'student-row'}${overdueBook ? ' overdue-row' : ''}`;
+
+        return `
+            <tr class="${rowClass}" onclick='selectBookRow(${JSON.stringify(bookId)})'>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(book.book_id || book.bookId || '--')}</td>
+                <td>${escapeHtml(book.barcode_value || book.barcode || '--')}</td>
+                <td>${escapeHtml(book.title || '--')}</td>
+                <td>${escapeHtml(book.author || '--')}</td>
+                <td>${escapeHtml(book.category || '--')}</td>
+                <td>${escapeHtml(book.status || '--')}</td>
+                <td>${escapeHtml(book.borrowed_by_name || book.borrowedByName || book.borrowed_by_student_id || book.borrowedByStudentId || '--')}</td>
+                <td>${escapeHtml(formatDateTime(book.due_date || book.dueDate))}</td>
+                <td>
+                    <div class="action-stack">
+                        <button class="btn danger" onclick='event.stopPropagation(); deleteBook(${JSON.stringify(bookId)})'>Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function selectBookRow(bookId) {
+    const book = allBooks.find(item => String(item.book_id || item.bookId) === String(bookId));
+    if (!book) return;
+
+    selectedBookId = String(book.book_id || book.bookId || '');
+    updateBarcodePreview(book.barcode_value || book.barcode || book.book_id || book.bookId || '');
+    renderBooks(allBooks);
+    toggleBarcodeDrawer(true);
+    document.getElementById('successMsg').textContent = `Showing barcode for ${book.title || selectedBookId}.`;
+    setStatus(`Selected book ${book.title || selectedBookId}`, 'live');
+}
+
+async function deleteBook(bookId) {
+    if (!bookId) {
+        setStatus('Book ID is missing.', 'error');
+        return;
+    }
+
+    if (!confirm(`Delete book ${bookId}?`)) return;
+
+    try {
+        const data = await fetchJson(`/api/books/${encodeURIComponent(bookId)}`, { method: 'DELETE' });
+        document.getElementById('successMsg').textContent = data.message || 'Book deleted successfully.';
+
+        if (String(selectedBookId) === String(bookId)) {
+            selectedBookId = null;
+            updateBarcodePreview('');
+        }
+
+        await loadBooks();
+        await loadBorrowings();
+        setStatus(data.message || 'Book removed.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+
+function getBookStats(books = allBooks) {
+    const total = books.length;
+    const overdue = books.filter(book => {
+        const status = String(book.status || '').toUpperCase();
+        return status === 'OVERDUE' || isPastDue(book.due_date || book.dueDate, null);
+    }).length;
+
+    const borrowed = books.filter(book => {
+        const status = String(book.status || '').toUpperCase();
+        return status === 'BORROWED' || status === 'OVERDUE' || isPastDue(book.due_date || book.dueDate, null);
+    }).length;
+
+    const available = Math.max(total - borrowed, 0);
+
+    return { total, available, borrowed, overdue };
+}
+
+function updateBookInventoryStats() {
+    const stats = getBookStats(allBooks);
+
+    const totalEl = document.getElementById('booksTotalCount');
+    const availableEl = document.getElementById('booksAvailableCount');
+    const borrowedEl = document.getElementById('booksBorrowedCount');
+
+    if (totalEl) totalEl.textContent = stats.total;
+    if (availableEl) availableEl.textContent = stats.available;
+    if (borrowedEl) borrowedEl.textContent = stats.borrowed;
+}
+
+function updateDashboardStats() {
+    const bookStats = getBookStats(allBooks);
+
+    const statMap = {
+        statTotalStudents: allStudents.length,
+        statTotalTeachers: allTeachers.length,
+        statTotalBooks: bookStats.total,
+        statAvailableBooks: bookStats.available,
+        statBorrowedBooks: bookStats.borrowed,
+        statOverdueBooks: bookStats.overdue
+    };
+
+    Object.entries(statMap).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    });
+
+    updateBookInventoryStats();
+}
+
+function downloadBooksCSV() {
+    if (!allBooks.length) {
+        setStatus('No book inventory records to download.', 'error');
+        return;
+    }
+
+    const headers = [
+        'No',
+        'Book ID',
+        'Barcode',
+        'Title',
+        'Author',
+        'Category',
+        'Status',
+        'Borrowed By',
+        'Due Date'
+    ];
+
+    const lines = [headers.map(csvSafe).join(',')];
+
+    allBooks.forEach((book, index) => {
+        const computedStatus = String(book.status || '').toUpperCase() === 'OVERDUE' || isPastDue(book.due_date || book.dueDate, null)
+            ? 'OVERDUE'
+            : (book.status || '');
+
+        const values = [
+            index + 1,
+            book.book_id || book.bookId || '',
+            book.barcode_value || book.barcode || '',
+            book.title || '',
+            book.author || '',
+            book.category || '',
+            computedStatus,
+            book.borrowed_by_name || book.borrowedByName || book.borrowed_by_student_id || book.borrowedByStudentId || '',
+            formatDateTime(book.due_date || book.dueDate)
+        ];
+
+        lines.push(values.map(csvSafe).join(','));
+    });
+
+    const csvContent = "\uFEFF" + lines.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `book_inventory_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setStatus('Book inventory CSV downloaded.', 'live');
+}
+
+async function loadBooks() {
+    const tbody = document.getElementById('booksTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-row">Loading books...</td></tr>';
+
+    try {
+        const data = await fetchJson('/api/books');
+        allBooks = data.books || [];
+        populateBorrowCategoryOptions();
+        renderBorrowBookOptions();
+        updateDashboardStats();
+
+        if (selectedBookId && !allBooks.some(book => String(book.book_id || book.bookId) === String(selectedBookId))) {
+            selectedBookId = null;
+            updateBarcodePreview('');
+        }
+
+        if (!allBooks.length) {
+            const categorySelect = document.getElementById('borrowCategoryFilter');
+            const bookSelect = document.getElementById('borrowBookList');
+            if (categorySelect) categorySelect.innerHTML = '<option value="">Choose Category</option>';
+            if (bookSelect) bookSelect.innerHTML = '<option value="">No books available</option>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-row">No books registered yet.</td></tr>';
+            return;
+        }
+
+        renderBooks(allBooks);
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="10" class="empty-row">${escapeHtml(error.message)}</td></tr>`;
+        setStatus(error.message, 'error');
+    }
+}
+
+function resetBorrowingDetails() {
+    const ids = [
+        'selBorrowerName',
+        'selBorrowerId',
+        'selBorrowerEmail',
+        'selStudentBarcode',
+        'selBookId',
+        'selBookTitle',
+        'selBookBarcode',
+        'selDueDate',
+        'selBorrowStatus'
+    ];
+
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '--';
+    });
+}
+
+function fillBorrowingDetails(row = {}) {
+    document.getElementById('selBorrowerName').textContent = row.borrower_name || row.borrowerName || '--';
+    document.getElementById('selBorrowerId').textContent = row.borrower_id || row.borrowerId || '--';
+    document.getElementById('selBorrowerEmail').textContent = row.borrower_email || row.borrowerEmail || '--';
+    document.getElementById('selStudentBarcode').textContent = row.borrower_barcode || row.borrowerBarcode || '--';
+    document.getElementById('selBookId').textContent = row.book_code || row.bookCode || row.book_id || row.bookId || '--';
+    document.getElementById('selBookTitle').textContent = row.title || '--';
+    document.getElementById('selBookBarcode').textContent = row.book_barcode || row.bookBarcode || row.barcode_value || row.barcode || '--';
+    document.getElementById('selDueDate').textContent = (row.due_date || row.dueDate) ? formatDateTime(row.due_date || row.dueDate) : '--';
+    document.getElementById('selBorrowStatus').textContent = row.status || '--';
+
+    updateBarcodePreview(row.book_barcode || row.bookBarcode || row.barcode_value || row.barcode || '');
+}
+
+function selectBorrowingRow(borrowingId) {
+    const row = allBorrowings.find(item => String(item.id) === String(borrowingId));
+    if (!row) return;
+
+    selectedBorrowingId = row.id;
+    fillBorrowingDetails(row);
+    renderBorrowings(allBorrowings);
+    setStatus(`Showing borrowing record for ${row.title || row.book_code || row.book_id || 'book'}`, 'live');
+}
+
+function renderBorrowings(rows) {
+    const tbody = document.getElementById('borrowingsTableBody');
+
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-row">No borrowing records yet.</td></tr>';
+        resetBorrowingDetails();
+        return;
+    }
+
+    tbody.innerHTML = rows.map((row, index) => {
+        const overdueBorrowing = String(row.status || '').toUpperCase() === 'OVERDUE' || isPastDue(row.due_date || row.dueDate, row.return_date || row.returnDate);
+        const rowClass = `${selectedBorrowingId === row.id ? 'student-row selected-row' : 'student-row'}${overdueBorrowing ? ' overdue-row' : ''}`;
+
+        return `
+            <tr class="${rowClass}" onclick='selectBorrowingRow(${JSON.stringify(row.id)})'>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(row.borrower_id || row.borrowerId || '--')}</td>
+                <td>${escapeHtml(row.borrower_name || row.borrowerName || '--')}</td>
+                <td>${escapeHtml(row.book_code || row.bookCode || row.book_id || row.bookId || '--')}</td>
+                <td>${escapeHtml(row.title || '--')}</td>
+                <td>${escapeHtml(row.book_barcode || row.bookBarcode || row.barcode_value || row.barcode || '--')}</td>
+                <td>${escapeHtml(formatDateTime(row.borrow_date || row.borrowDate))}</td>
+                <td>${escapeHtml(formatDateTime(row.due_date || row.dueDate))}</td>
+                <td>${escapeHtml(formatDateTime(row.return_date || row.returnDate))}</td>
+                <td>${borrowingStatusBadge(row.status, row.due_date || row.dueDate, row.return_date || row.returnDate)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function loadBorrowings() {
+    const tbody = document.getElementById('borrowingsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-row">Loading borrowings...</td></tr>';
+
+    try {
+        const data = await fetchJson('/api/borrowings');
+        allBorrowings = data.borrowings || [];
+
+        renderBorrowings(allBorrowings);
+
+        if (selectedBorrowingId) {
+            const stillExists = allBorrowings.find(row => String(row.id) === String(selectedBorrowingId));
+            if (stillExists) {
+                fillBorrowingDetails(stillExists);
+            } else {
+                selectedBorrowingId = null;
+                resetBorrowingDetails();
+            }
+        } else {
+            resetBorrowingDetails();
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="10" class="empty-row">${escapeHtml(error.message)}</td></tr>`;
+        resetBorrowingDetails();
+        setStatus(error.message, 'error');
+    }
+}
+
+function csvSafe(value) {
+    return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
+function getBorrowingComputedStatus(row = {}) {
+    const rawStatus = String(row.status || '').toUpperCase();
+    const dueDate = row.due_date || row.dueDate || null;
+    const returnDate = row.return_date || row.returnDate || null;
+
+    if (rawStatus === 'RETURNED') return 'RETURNED';
+    if (isPastDue(dueDate, returnDate)) return 'OVERDUE';
+    return rawStatus || 'BORROWED';
+}
+
+function downloadBorrowingsCSV() {
+    if (!allBorrowings.length) {
+        setStatus('No borrowing records to download.', 'error');
+        return;
+    }
+
+    const headers = [
+        'No',
+        'Borrower Type',
+        'Borrower ID',
+        'Borrower Name',
+        'Borrower Email',
+        'Borrower Barcode',
+        'Book ID',
+        'Book Title',
+        'Book Barcode',
+        'Borrow Date',
+        'Due Date',
+        'Return Date',
+        'Status'
+    ];
+
+    const lines = [headers.map(csvSafe).join(',')];
+
+    allBorrowings.forEach((row, index) => {
+        const values = [
+            index + 1,
+            row.borrower_type || row.borrowerType || '',
+            row.borrower_id || row.borrowerId || '',
+            row.borrower_name || row.borrowerName || '',
+            row.borrower_email || row.borrowerEmail || '',
+            row.borrower_barcode || row.borrowerBarcode || '',
+            row.book_code || row.bookCode || row.book_id || row.bookId || '',
+            row.title || '',
+            row.book_barcode || row.bookBarcode || row.barcode_value || row.barcode || '',
+            formatDateTime(row.borrow_date || row.borrowDate),
+            formatDateTime(row.due_date || row.dueDate),
+            formatDateTime(row.return_date || row.returnDate),
+            getBorrowingComputedStatus(row)
+        ];
+
+        lines.push(values.map(csvSafe).join(','));
+    });
+
+    const csvContent = "\uFEFF" + lines.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `borrowing_records_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setStatus('Borrowing records CSV downloaded.', 'live');
+}
+
+async function clearBorrowings() {
+    const ok = confirm('Clear all borrowing records? This cannot be undone.');
+    if (!ok) return;
+
+    try {
+        const data = await fetchJson('/api/borrowings/clear', {
+            method: 'DELETE'
+        });
+
+        selectedBorrowingId = null;
+        resetBorrowingDetails();
+        await loadBorrowings();
+        await loadBooks();
+
+        document.getElementById('successMsg').textContent = data.message || 'Borrowing records cleared successfully.';
+        setStatus(data.message || 'Borrowing records cleared successfully.', 'live');
+    } catch (error) {
+        setStatus(error.message, 'error');
+    }
+}
+
+
+function bindMotionEffects() {
+    const rippleTargets = document.querySelectorAll('.btn, .floating-about-tab, .floating-borrow-tab, .floating-barcode-tab');
+
+    rippleTargets.forEach(target => {
+        if (target.dataset.motionBound === '1') return;
+        target.dataset.motionBound = '1';
+
+        target.addEventListener('pointerdown', function (event) {
+            const rect = this.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'btn-ripple';
+            ripple.style.left = `${event.clientX - rect.left}px`;
+            ripple.style.top = `${event.clientY - rect.top}px`;
+            this.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+        });
+    });
+
+    const revealTargets = document.querySelectorAll('header, main .card, .meta-box, .statusbar, .floating-about-tab, .floating-borrow-tab, .floating-barcode-tab');
+    revealTargets.forEach((element, index) => {
+        if (element.dataset.revealed === '1') return;
+        element.dataset.revealed = '1';
+        element.classList.add('ui-reveal');
+        element.style.setProperty('--reveal-delay', `${Math.min(index * 55, 360)}ms`);
+        requestAnimationFrame(() => element.classList.add('is-visible'));
+    });
+}
+
+scanInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        submitScanCode();
+    }
+});
+
+studentSearch.addEventListener('input', filterStudents);
+
+if (socket) {
+    socket.on('connect', () => setStatus('Connected to server', 'live'));
+
+    socket.on('systemStatus', (payload) => {
+        if (payload?.message) setStatus(payload.message, 'live');
+    });
+
+    socket.on('attendanceUpdated', (payload) => {
+        if (payload?.student) {
+            selectedStudentId = payload.student.id || payload.student.studentId || payload.student.student_id || selectedStudentId;
+            fillDisplay(payload.student, payload.record || payload.attendance || null);
+        }
+        renderBorrowNotice(payload?.unreturned_books || []);
+        if (payload?.message) document.getElementById('successMsg').textContent = payload.message;
+        loadStudents();
+        loadAttendance();
+        setStatus(payload?.message || 'Attendance updated.', 'live');
+    });
+
+    socket.on('attendanceTableChanged', (payload) => {
+        loadAttendance();
+        if (payload?.message) setStatus(payload.message, 'live');
+    });
+
+    socket.on('barcodeRejected', (payload) => {
+        setStatus(payload?.message || 'Scan rejected.', 'error');
+    });
+}
+
+window.addEventListener('load', async () => {
+    const borrowBookScan = document.getElementById('borrowBookScan');
+    const borrowBorrowerScan = document.getElementById('borrowBorrowerScan');
+    const borrowerType = document.getElementById('borrowerType');
+
+    if (borrowBookScan) {
+        borrowBookScan.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                lookupBorrowBookInfo();
+                if (borrowBorrowerScan) borrowBorrowerScan.focus();
+            }
+        });
+        borrowBookScan.addEventListener('blur', function () {
+            if (this.value.trim()) lookupBorrowBookInfo();
+        });
+    }
+
+    if (borrowerType) {
+        borrowerType.addEventListener('change', updateBorrowerPlaceholder);
+    }
+
+    bindMotionEffects();
+    updateBorrowerPlaceholder();
+    handleRegisterBookCategoryChange();
+    resetDisplay();
+    resetBorrowBookInfo();
+    resetBorrowingDetails();
+    setStatus('Loading students...', 'live');
+    await loadStudents();
+    await loadAttendance();
+    await loadBooks();
+    await loadBorrowings();
+    await loadTeachers();
+    setDefaultBorrowDueDate();
+    scanInput.focus();
+    setStatus('System Idle');
+});
+</script>
+
+<button class="floating-barcode-tab" onclick="toggleBarcodeDrawer()"><span class="fab-icon">🏷</span><span class="fab-label">Barcode Preview</span></button>
+<button class="floating-borrow-tab" onclick="toggleLibraryDrawer()"><span class="fab-icon">📚</span><span class="fab-label">Borrow Book</span></button>
+<button class="floating-about-tab" onclick="toggleAboutDrawer()"><span class="fab-icon">ℹ️</span><span class="fab-label">About Us</span></button>
+
+
+<div class="about-drawer" id="aboutDrawer" onclick="if(event.target===this) toggleAboutDrawer(false)">
+    <div class="about-modal-card" onclick="event.stopPropagation()">
+        <div class="about-modal-header">
+            <div class="about-modal-title">
+                <strong>Libratrack System Overview</strong>
+                <span>Meet the researchers and learn how the platform works.</span>
+            </div>
+            <button class="btn gray" onclick="toggleAboutDrawer(false)">Close</button>
+        </div>
+
+        <div class="about-drawer-body">
+            <div class="about-combined-panel">
+                <div class="about-system-label">Smart Attendance + Library Monitoring</div>
+                <h3 class="about-system-title">Libratrack is a simple and organized system for faster school record management.</h3>
+                <p class="about-system-text">
+                    Libratrack is a web-based attendance and library management system that helps schools organize student and teacher records in one place. It uses barcode scanning for faster attendance, simplifies book inventory and borrowing, and gives administrators an easy way to view records and reduce manual work.
+                </p>
+
+                <div class="about-feature-grid">
+                    <div class="about-feature-card">
+                        <strong>Fast Barcode Scanning</strong>
+                        <p>Quickly scan IDs or barcodes to record attendance and open related information instantly.</p>
+                    </div>
+                    <div class="about-feature-card">
+                        <strong>Library Tracking</strong>
+                        <p>Monitor books, borrowing dates, return status, and overdue records with less manual checking.</p>
+                    </div>
+                    <div class="about-feature-card">
+                        <strong>Centralized Records</strong>
+                        <p>Keep student, teacher, attendance, and book data in one clean and accessible interface.</p>
+                    </div>
+                </div>
+
+                <div class="about-section-divider"></div>
+
+                <h3 class="about-list-title">Research Team</h3>
+                <p class="about-team-text">
+                    The Libratrack research team worked together to plan, design, and develop a system that improves attendance monitoring and library record management for schools. You may contact the researchers by clicking their names below for questions or more information about the system.
+                </p>
+
+                <div class="about-links-grid">
+                    <div class="about-card">
+                        <a href="https://www.facebook.com/chrstnhrldbrc" target="_blank" rel="noopener noreferrer">Abarca, Christian Harold F.</a>
+                        <div class="about-role">Researcher / Resources</div>
+                    </div>
+                    <div class="about-card">
+                        <a href="https://www.facebook.com/profile.php?id=61578033405275" target="_blank" rel="noopener noreferrer">Caberte, Emarvie C.</a>
+                        <div class="about-role">Software / Hardware Developer</div>
+                    </div>
+                    <div class="about-card">
+                        <a href="https://www.facebook.com/laiza.enova.1" target="_blank" rel="noopener noreferrer">Enova, Laiza E.</a>
+                        <div class="about-role">Hardware Developer / Analyst</div>
+                    </div>
+                    <div class="about-card">
+                        <a href="https://www.facebook.com/maryelmagdaraog" target="_blank" rel="noopener noreferrer">Magdaraog, Mariel S.</a>
+                        <div class="about-role">Data Entry / Survey Analyst</div>
+                    </div>
+                    <div class="about-card">
+                        <a href="https://facebook.com/your-link-here-tesorero" target="_blank" rel="noopener noreferrer">Tesorero, Angel Mae E.</a>
+                        <div class="about-role">Budget Analyst / Tester</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="barcode-drawer" id="barcodeDrawer">
+    <div class="library-drawer-header">
+        <span>Barcode Preview</span>
+        <button class="btn gray" onclick="toggleBarcodeDrawer(false)">Close</button>
+    </div>
+    <div class="barcode-drawer-body">
+        <div class="barcode-card">
+            <div class="barcode-toolbar">
+                <strong id="barcodeLabel">No barcode selected</strong>
+                <div class="action-stack">
+                    <button class="btn gray" onclick="downloadDisplayedBarcode('svg')">Download SVG</button>
+                    <button class="btn gray" onclick="downloadDisplayedBarcode('png')">Download PNG</button>
+                </div>
+            </div>
+            <div class="barcode-frame" id="barcodeFrame">
+                <div class="barcode-empty">Scan or select a student, teacher, or book first.<br>SVG is best for printing. PNG is best for phone display.</div>
+            </div>
+            <p class="note" style="margin-top:10px">This preview is now floating, so you can open it anytime without scrolling down.</p>
+        </div>
+    </div>
+</div>
+
+<div class="library-drawer" id="libraryDrawer">
+    <div class="library-drawer-header">
+        <span>Library Borrowing</span>
+        <button class="btn gray" onclick="toggleLibraryDrawer(false)">Close</button>
+    </div>
+    <div class="library-drawer-body">
+        <select id="borrowCategoryFilter" class="text-input" onchange="handleBorrowCategoryChange()">
+            <option value="">Choose Category</option>
+        </select>
+
+        <select id="borrowBookList" class="text-input" onchange="selectBorrowBookFromList()">
+            <option value="">Choose Book</option>
+        </select>
+
+        <input type="text" id="borrowBookScan" class="text-input" placeholder="Scan book barcode first or choose from the list">
+
+        <select id="borrowerType" class="text-input" onchange="updateBorrowerPlaceholder()">
+            <option value="STUDENT" selected>Student</option>
+            <option value="TEACHER">Teacher</option>
+        </select>
+
+        <input type="text" id="borrowBorrowerScan" class="text-input" placeholder="Scan student barcode next">
+        <input type="datetime-local" id="borrowDueDate" class="text-input">
+        <div class="action-stack">
+            <button class="btn success" onclick="submitBorrowBook()">Confirm Borrow</button>
+            <button class="btn warning" onclick="submitReturnBook()">Return Book</button>
+            <button class="btn primary" onclick="openBookRegisterDialog()">Register Book</button>
+        </div>
+
+        <div class="borrower-panel">
+            <div class="borrower-panel-title">Current Book Information</div>
+            <div class="borrower-panel-grid">
+                <div class="borrower-item"><small>Book Title</small><div class="value" id="borrowInfoBookTitle">--</div></div>
+                <div class="borrower-item"><small>Book Status</small><div class="value" id="borrowInfoBookStatus">--</div></div>
+                <div class="borrower-item"><small>Borrower Name</small><div class="value" id="borrowInfoBorrowerName">--</div></div>
+                <div class="borrower-item"><small>Borrower ID</small><div class="value" id="borrowInfoBorrowerId">--</div></div>
+                <div class="borrower-item"><small>Borrower Email</small><div class="value" id="borrowInfoBorrowerEmail">--</div></div>
+                <div class="borrower-item"><small>Due Date</small><div class="value" id="borrowInfoDueDate">--</div></div>
+            </div>
+        </div>
+
+        <p class="note">Flow: choose a category to see the matching book list, or scan the book barcode manually. Then choose Student or Teacher, scan the borrower barcode, set the deadline, and confirm borrowing.</p>
+    </div>
+</div>
+
+<div class="dialog" id="registerBookDialog">
+    <div class="dialog-card">
+        <h3 style="margin:0 0 12px">Register Book</h3>
+        <div class="form-stack">
+            <input type="text" id="bookId" class="text-input" placeholder="Book ID" readonly>
+            <input type="text" id="bookTitle" class="text-input" placeholder="Book Title">
+            <input type="text" id="bookAuthor" class="text-input" placeholder="Author">
+            <select id="bookCategory" class="text-input" onchange="handleRegisterBookCategoryChange()">
+                <option value="">Choose Category</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Non-Fiction">Non-Fiction</option>
+                <option value="Science">Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="History">History</option>
+                <option value="Technology">Technology</option>
+                <option value="Reference">Reference</option>
+                <option value="General Knowledge">General Knowledge</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="bookCategoryCustom" class="text-input" placeholder="Enter custom category" style="display:none">
+        </div>
+        <div class="form-actions">
+            <button class="btn success" onclick="submitBookRegistration()">Save Book</button>
+            <button class="btn gray" onclick="closeBookRegisterDialog()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="dialog" id="booksDialog">
+    <div class="dialog-card" style="width:min(1100px,100%)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div>
+                <h3 style="margin:0">Book Inventory</h3>
+                <div class="note">Registered books and current borrowing status.</div>
+            </div>
+            <div class="action-stack">
+                <button class="btn primary" onclick="openBookRegisterDialog()">Register Book</button>
+                <button class="btn soft" onclick="downloadBooksCSV()">Download CSV</button>
+                <button class="btn gray" onclick="loadBooks()">Refresh</button>
+                <button class="btn danger" onclick="toggleBooksDialog(false)">Close</button>
+            </div>
+        </div>
+        <div class="meta-grid" style="margin-bottom:14px">
+            <div class="meta-box"><small>Total Books</small><strong id="booksTotalCount">0</strong></div>
+            <div class="meta-box"><small>Available</small><strong id="booksAvailableCount">0</strong></div>
+            <div class="meta-box"><small>Borrowed / Overdue</small><strong id="booksBorrowedCount">0</strong></div>
+        </div>
+        <div class="table-wrap" style="max-height:65vh">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Book ID</th>
+                        <th>Barcode</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Borrowed By</th>
+                        <th>Due Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="dialog" id="borrowingsDialog">
+    <div class="dialog-card large-dialog">
+        <div class="modal-toolbar">
+            <div>
+                <h3 style="margin:0">Borrowing Records</h3>
+                <div class="note">See if the book was returned or not, including deadlines.</div>
+            </div>
+            <div class="action-stack">
+                <button class="btn gray" onclick="loadBorrowings()">Refresh</button>
+                <button class="btn warning" onclick="clearBorrowings()">Clear</button>
+                <button class="btn primary" onclick="downloadBorrowingsCSV()">Download CSV</button>
+                <button class="btn danger" onclick="toggleBorrowingsDialog(false)">Close</button>
+            </div>
+        </div>
+        <div class="table-wrap modal-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Borrower ID</th>
+                        <th>Borrower Name</th>
+                        <th>Book ID</th>
+                        <th>Book Title</th>
+                        <th>Barcode</th>
+                        <th>Borrow Date</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="borrowingsTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="borrower-panel" style="margin-top:14px">
+            <div class="borrower-panel-title">Selected Borrowing Record</div>
+            <div class="borrower-panel-grid">
+                <div class="borrower-item"><small>Borrower Name</small><div class="value" id="selBorrowerName">--</div></div>
+                <div class="borrower-item"><small>Student ID</small><div class="value" id="selBorrowerId">--</div></div>
+                <div class="borrower-item"><small>Borrower Email</small><div class="value" id="selBorrowerEmail">--</div></div>
+                <div class="borrower-item"><small>Borrower Barcode</small><div class="value" id="selStudentBarcode">--</div></div>
+                <div class="borrower-item"><small>Book ID</small><div class="value" id="selBookId">--</div></div>
+                <div class="borrower-item"><small>Book Title</small><div class="value" id="selBookTitle">--</div></div>
+                <div class="borrower-item"><small>Book Barcode</small><div class="value" id="selBookBarcode">--</div></div>
+                <div class="borrower-item"><small>Due Date</small><div class="value" id="selDueDate">--</div></div>
+                <div class="borrower-item"><small>Status</small><div class="value" id="selBorrowStatus">--</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function () {
+    const toastState = { lastKey: '', lastAt: 0 };
+
+    function ensureLayers() {
+        if (!document.getElementById('shellOverlay')) {
+            const overlay = document.createElement('div');
+            overlay.id = 'shellOverlay';
+            overlay.className = 'shell-overlay';
+            overlay.addEventListener('click', closeAllPanels);
+            document.body.appendChild(overlay);
+        }
+
+        if (!document.getElementById('toastStack')) {
+            const stack = document.createElement('div');
+            stack.id = 'toastStack';
+            stack.className = 'toast-stack';
+            stack.setAttribute('aria-live', 'polite');
+            stack.setAttribute('aria-atomic', 'true');
+            document.body.appendChild(stack);
+        }
+    }
+
+    function dismissToast(toast) {
+        if (!toast || toast.dataset.closing === '1') return;
+        toast.dataset.closing = '1';
+        toast.classList.add('toast-exit');
+        window.setTimeout(() => toast.remove(), 240);
+    }
+
+    function showToast(message, type = 'info', title = 'Notice') {
+        const stack = document.getElementById('toastStack');
+        if (!stack || !message) return;
+
+        const key = `${type}:${message}`;
+        const now = Date.now();
+        if (toastState.lastKey === key && now - toastState.lastAt < 1800) return;
+        toastState.lastKey = key;
+        toastState.lastAt = now;
+
+        const iconMap = {
+            info: 'i',
+            success: '✓',
+            error: '!',
+            warning: '!'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon" aria-hidden="true">${iconMap[type] || 'i'}</span>
+            <div class="toast-content">
+                <strong>${escapeHtml(title)}</strong>
+                <p>${escapeHtml(message)}</p>
+            </div>
+            <button class="toast-close" type="button" aria-label="Dismiss notification">×</button>
+        `;
+
+        toast.querySelector('.toast-close')?.addEventListener('click', () => dismissToast(toast));
+        stack.prepend(toast);
+        window.setTimeout(() => dismissToast(toast), type === 'error' ? 4600 : 3200);
+
+        while (stack.children.length > 4) {
+            stack.lastElementChild?.remove();
+        }
+    }
+
+    function focusScanInput() {
+        const input = document.getElementById('scanInput');
+        if (!input) return;
+        input.focus();
+        input.select();
+    }
+
+    function focusStudentSearch() {
+        const input = document.getElementById('studentSearch');
+        if (!input) return;
+        input.focus();
+        input.select();
+    }
+
+    function getEnhancedFilteredStudentCount() {
+        const input = document.getElementById('studentSearch');
+        const query = String(input?.value || '').trim().toLowerCase();
+        if (typeof allStudents === 'undefined' || !Array.isArray(allStudents)) return 0;
+        if (!query) return allStudents.length;
+
+        return allStudents.filter(student => {
+            const searchableText = [
+                student.id,
+                student.name,
+                student.email,
+                student.age,
+                student.year,
+                student.course,
+                student.address,
+                student.barcode
+            ].map(value => String(value ?? '').toLowerCase()).join(' ');
+            return searchableText.includes(query);
+        }).length;
+    }
+
+    function updateSearchEnhancements() {
+        const input = document.getElementById('studentSearch');
+        const clearButton = document.getElementById('clearStudentSearchBtn');
+        const countChip = document.getElementById('studentSearchCount');
+        if (!input) return;
+
+        const hasQuery = !!String(input.value || '').trim();
+        clearButton?.classList.toggle('hidden', !hasQuery);
+
+        if (countChip) {
+            const count = getEnhancedFilteredStudentCount();
+            const label = hasQuery ? 'matching students' : 'students loaded';
+            countChip.innerHTML = `<span>${count}</span><span>${label}</span>`;
+        }
+    }
+
+    function clearStudentSearch() {
+        const input = document.getElementById('studentSearch');
+        if (!input) return;
+        input.value = '';
+        if (typeof filterStudents === 'function') filterStudents();
+        updateSearchEnhancements();
+        input.focus();
+    }
+
+    function updateLiveClock() {
+        const clock = document.getElementById('liveClock');
+        if (!clock) return;
+        const now = new Date();
+        clock.textContent = now.toLocaleString([], {
+            weekday: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+
+    function enhanceHeader() {
+        const titleWrap = document.querySelector('.header-brand > div:last-child');
+        if (titleWrap && !titleWrap.classList.contains('header-copy')) {
+            titleWrap.classList.add('header-copy');
+            const subtitle = document.createElement('p');
+            subtitle.className = 'header-subtitle';
+            subtitle.textContent = 'Faster attendance, cleaner records, and smoother library tracking in one dashboard.';
+            titleWrap.appendChild(subtitle);
+
+            const commandRow = document.createElement('div');
+            commandRow.className = 'header-command-row';
+
+            const focusScanBtn = document.createElement('button');
+            focusScanBtn.type = 'button';
+            focusScanBtn.className = 'btn header-utility-btn';
+            focusScanBtn.textContent = 'Focus Scan';
+            focusScanBtn.addEventListener('click', focusScanInput);
+
+            const searchBtn = document.createElement('button');
+            searchBtn.type = 'button';
+            searchBtn.className = 'btn header-utility-btn';
+            searchBtn.textContent = 'Search Students';
+            searchBtn.addEventListener('click', focusStudentSearch);
+
+            commandRow.append(focusScanBtn, searchBtn);
+            titleWrap.appendChild(commandRow);
+        }
+
+        const headerRight = document.querySelector('.header-right');
+        const logoutBtn = headerRight?.querySelector('.btn.danger');
+        if (headerRight && !document.getElementById('clockPill')) {
+            const pill = document.createElement('div');
+            pill.className = 'pill pill-compact';
+            pill.id = 'clockPill';
+            pill.innerHTML = '<span class="dot live"></span><span id="liveClock">--</span>';
+            headerRight.insertBefore(pill, logoutBtn || null);
+        }
+    }
+
+    function enhanceScanCard() {
+        const scanCard = document.querySelector('.card.section.panel-mint');
+        if (!scanCard || scanCard.classList.contains('scan-hero-card')) return;
+
+        scanCard.classList.add('scan-hero-card');
+        const title = scanCard.querySelector('.section-title');
+        if (title) title.textContent = 'Quick Scan';
+
+        if (!scanCard.querySelector('.hero-copy')) {
+            const description = document.createElement('p');
+            description.className = 'hero-copy';
+            description.textContent = 'Use a barcode scanner or type a student ID manually. Press Enter for the fastest check-in flow.';
+            title?.insertAdjacentElement('afterend', description);
+        }
+
+        const scanBox = scanCard.querySelector('.scan-box');
+        scanBox?.classList.add('scan-box-upgraded');
+
+        if (scanBox && !document.getElementById('focusSearchFromScan')) {
+            const searchButton = document.createElement('button');
+            searchButton.type = 'button';
+            searchButton.id = 'focusSearchFromScan';
+            searchButton.className = 'btn scan-ghost-btn';
+            searchButton.textContent = 'Find Student';
+            searchButton.addEventListener('click', focusStudentSearch);
+            scanBox.appendChild(searchButton);
+        }
+
+        if (!scanCard.querySelector('.scan-shortcuts')) {
+            const chips = document.createElement('div');
+            chips.className = 'scan-shortcuts';
+            chips.innerHTML = [
+                '<span class="shortcut-chip">Enter to submit</span>',
+                '<span class="shortcut-chip">Alt + S to focus scan</span>',
+                '<span class="shortcut-chip">/ to search students</span>'
+            ].join('');
+            scanBox?.insertAdjacentElement('afterend', chips);
+        }
+
+        const note = scanCard.querySelector('.note');
+        if (!scanCard.querySelector('.scan-help-grid')) {
+            const helperGrid = document.createElement('div');
+            helperGrid.className = 'scan-help-grid';
+            helperGrid.innerHTML = `
+                <div class="scan-help-card">
+                    <strong>Fast input</strong>
+                    <p>The scan box stays ready so staff can keep checking people in without extra clicks.</p>
+                </div>
+                <div class="scan-help-card">
+                    <strong>Manual fallback</strong>
+                    <p>If the scanner is unavailable, typing the student ID still uses the same quick flow.</p>
+                </div>
+                <div class="scan-help-card">
+                    <strong>Better feedback</strong>
+                    <p>Errors surface as toast alerts while the status dock keeps showing the latest system state.</p>
+                </div>
+            `;
+            if (note) {
+                note.replaceWith(helperGrid);
+            } else {
+                scanCard.appendChild(helperGrid);
+            }
+        }
+    }
+
+    function enhanceSearchBox() {
+        const searchWrap = document.querySelector('.search-wrap');
+        const searchInput = document.getElementById('studentSearch');
+        if (!searchWrap || !searchInput || searchWrap.dataset.enhanced === '1') return;
+
+        searchWrap.dataset.enhanced = '1';
+
+        const tools = document.createElement('div');
+        tools.className = 'search-tools';
+        tools.innerHTML = '<div class="search-count" id="studentSearchCount">0 students loaded</div>';
+
+        const shell = document.createElement('div');
+        shell.className = 'search-input-shell';
+        searchWrap.insertBefore(tools, searchInput);
+        searchWrap.insertBefore(shell, searchInput);
+        shell.appendChild(searchInput);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.id = 'clearStudentSearchBtn';
+        clearBtn.className = 'btn gray clear-search-btn hidden';
+        clearBtn.textContent = 'Clear';
+        clearBtn.addEventListener('click', clearStudentSearch);
+        shell.appendChild(clearBtn);
+
+        updateSearchEnhancements();
+    }
+
+    function pulseDisplayCard() {
+        const card = document.querySelector('.panel-amber');
+        if (!card) return;
+        card.classList.remove('card-attention');
+        void card.offsetWidth;
+        card.classList.add('card-attention');
+        window.setTimeout(() => card.classList.remove('card-attention'), 900);
+    }
+
+    function syncShellState() {
+        const overlay = document.getElementById('shellOverlay');
+        const needsOverlay = document.querySelector('.library-drawer.open, .barcode-drawer.open');
+        const anyOpen = document.querySelector('.dialog.open, .about-drawer.open, .library-drawer.open, .barcode-drawer.open');
+
+        overlay?.classList.toggle('open', !!needsOverlay);
+        document.body.classList.toggle('shell-locked', !!anyOpen);
+    }
+
+    function closeAllPanels() {
+        try { if (typeof toggleLibraryDrawer === 'function') toggleLibraryDrawer(false); } catch (error) {}
+        try { if (typeof toggleBarcodeDrawer === 'function') toggleBarcodeDrawer(false); } catch (error) {}
+        try { if (typeof toggleAboutDrawer === 'function') toggleAboutDrawer(false); } catch (error) {}
+        try { if (typeof toggleAttendanceTable === 'function') toggleAttendanceTable(false); } catch (error) {}
+        try { if (typeof toggleTeachersDialog === 'function') toggleTeachersDialog(false); } catch (error) {}
+        try { if (typeof toggleBooksDialog === 'function') toggleBooksDialog(false); } catch (error) {}
+        try { if (typeof toggleBorrowingsDialog === 'function') toggleBorrowingsDialog(false); } catch (error) {}
+        try { if (typeof closeRegisterDialog === 'function') closeRegisterDialog(); } catch (error) {}
+        try { if (typeof closeRegisterTeacherDialog === 'function') closeRegisterTeacherDialog(); } catch (error) {}
+        try { if (typeof closeBookRegisterDialog === 'function') closeBookRegisterDialog(); } catch (error) {}
+        syncShellState();
+    }
+
+    function bindDialogObserver() {
+        const observer = new MutationObserver(syncShellState);
+        document.querySelectorAll('.dialog, .library-drawer, .barcode-drawer, .about-drawer').forEach(element => {
+            observer.observe(element, { attributes: true, attributeFilter: ['class'] });
+            element.setAttribute('role', 'dialog');
+        });
+        syncShellState();
+    }
+
+    function addKeyboardShortcuts() {
+        document.addEventListener('keydown', function (event) {
+            const target = event.target;
+            const isField = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+
+            if (event.key === 'Escape') {
+                if (document.querySelector('.dialog.open, .about-drawer.open, .library-drawer.open, .barcode-drawer.open')) {
+                    event.preventDefault();
+                    closeAllPanels();
+                    return;
+                }
+
+                if (isField && typeof target.blur === 'function') {
+                    target.blur();
+                }
+            }
+
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key === '/' && !isField) {
+                event.preventDefault();
+                focusStudentSearch();
+            }
+
+            if (event.altKey && event.key.toLowerCase() === 's') {
+                event.preventDefault();
+                focusScanInput();
+            }
+        });
+    }
+
+    if (typeof setStatus === 'function') {
+        const originalSetStatus = setStatus;
+        setStatus = function (text, type = 'idle') {
+            originalSetStatus(text, type);
+            statusBar?.classList.remove('status-live', 'status-scan', 'status-error');
+            if (type === 'live') statusBar?.classList.add('status-live');
+            if (type === 'scan') statusBar?.classList.add('status-scan');
+            if (type === 'error') {
+                statusBar?.classList.add('status-error');
+                showToast(text, 'error', 'Action needed');
+            }
+        };
+        window.setStatus = setStatus;
+    }
+
+    if (typeof fillDisplay === 'function') {
+        const originalFillDisplay = fillDisplay;
+        fillDisplay = function (...args) {
+            const result = originalFillDisplay.apply(this, args);
+            pulseDisplayCard();
+            return result;
+        };
+        window.fillDisplay = fillDisplay;
+    }
+
+    if (typeof fillTeacherDisplay === 'function') {
+        const originalFillTeacherDisplay = fillTeacherDisplay;
+        fillTeacherDisplay = function (...args) {
+            const result = originalFillTeacherDisplay.apply(this, args);
+            pulseDisplayCard();
+            return result;
+        };
+        window.fillTeacherDisplay = fillTeacherDisplay;
+    }
+
+    if (typeof renderStudents === 'function') {
+        const originalRenderStudents = renderStudents;
+        renderStudents = function (...args) {
+            const result = originalRenderStudents.apply(this, args);
+            updateSearchEnhancements();
+            return result;
+        };
+        window.renderStudents = renderStudents;
+    }
+
+    if (typeof loadStudents === 'function') {
+        const originalLoadStudents = loadStudents;
+        loadStudents = async function (...args) {
+            const result = await originalLoadStudents.apply(this, args);
+            updateSearchEnhancements();
+            return result;
+        };
+        window.loadStudents = loadStudents;
+    }
+
+    ensureLayers();
+    enhanceHeader();
+    enhanceScanCard();
+    enhanceSearchBox();
+    bindDialogObserver();
+    addKeyboardShortcuts();
+
+    const scanInputEl = document.getElementById('scanInput');
+    if (scanInputEl) {
+        scanInputEl.placeholder = 'Scan barcode or type student ID, then press Enter';
+        scanInputEl.addEventListener('focus', () => document.body.classList.add('scan-focus'));
+        scanInputEl.addEventListener('blur', () => document.body.classList.remove('scan-focus'));
+    }
+
+    const successMsg = document.getElementById('successMsg');
+    if (successMsg) {
+        successMsg.textContent = 'Ready to scan. Use Enter to submit or pick a record from the table.';
+    }
+
+    const studentSearchEl = document.getElementById('studentSearch');
+    studentSearchEl?.addEventListener('input', updateSearchEnhancements);
+    studentSearchEl?.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            clearStudentSearch();
+        }
+    });
+
+    updateLiveClock();
+    window.setInterval(updateLiveClock, 1000);
+    updateSearchEnhancements();
+    syncShellState();
+
+    window.showToast = showToast;
+    window.focusScanInput = focusScanInput;
+    window.focusStudentSearch = focusStudentSearch;
+    window.clearStudentSearch = clearStudentSearch;
+    window.closeAllPanels = closeAllPanels;
+})();
+</script>
+
+</body>
+</html>

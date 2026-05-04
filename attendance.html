@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Records</title>
+<style>
+body{
+  font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+  background:#f5f7fa;
+  margin:0;
+  padding:24px;
+  color:#2c3e50
+}
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+  border:1px solid #e1e6eb
+}
+h1{
+  margin:0 0 4px 0
+}
+#summary {
+  color: #7f8c8d;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px
+}
+.btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background:#3498db;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+  margin-left:6px;
+  transition: background 0.2s;
+}
+.btn:hover{
+  background:#2980b9;
+}
+.btn.secondary{
+  background:#95a5a6
+}
+.btn.success{
+  background:#27ae60
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff
+}
+thead{
+  background:#f2f5f7
+}
+th,td{
+  text-align:left;
+  padding:12px;
+  border-bottom:1px solid #e1e6eb
+}
+.empty{
+  padding:40px;
+  text-align:center;
+  color:#7f8c8d;
+  font-weight:600;
+  display: none;
+}
+.error{
+  color:#c0392b;
+  font-weight:600
+}
+/* Visual indicator for auto-refresh */
+.refresh-tag {
+  font-size: 0.7rem;
+  background: #e1f5fe;
+  color: #0288d1;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div>
+      <h1>Attendance Records <span class="refresh-tag">Auto-updating</span></h1>
+      <div id="summary">Initializing...</div>
+    </div>
+    <div>
+      <button class="btn" onclick="loadAttendance()">Refresh Now</button>
+      <button class="btn success" onclick="downloadAttendanceCSV()">Download CSV</button>
+      <button class="btn secondary" onclick="window.close()">Close Tab</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Student ID</th>
+        <th>Barcode</th>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Time In</th>
+        <th>Time Out</th>
+        <th>Last Action</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceTableBody"></tbody>
+  </table>
+
+  <div class="empty" id="empty">No attendance records yet.</div>
+</div>
+
+<script>
+let attendanceRows = [];
+let refreshTimer;
+
+function escapeHtml(value) {
+  return String(value ?? ' ')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function escapeCSV(value) {
+  const str = String(value ?? '');
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+async function readJsonSafely(response) {
+  const raw = await response.text();
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new Error(raw || `Server returned ${response.status} ${response.statusText}`);
+  }
+}
+
+/**
+ * Loads attendance data from API
+ * @param {boolean} isAuto - If true, prevents the "Loading..." UI flicker
+ */
+async function loadAttendance(isAuto = false) {
+  const tbody = document.getElementById('attendanceTableBody');
+  const empty = document.getElementById('empty');
+  const summary = document.getElementById('summary');
+
+  // Only show loading placeholder if it's NOT a background auto-refresh
+  if (!isAuto) {
+    tbody.innerHTML = '<tr><td colspan="9">Loading records...</td></tr>';
+    summary.textContent = 'Updating...';
+  }
+
+  try {
+    const response = await fetch('/api/attendance', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await readJsonSafely(response);
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || `Failed to load (${response.status})`);
+    }
+
+    const rows = Array.isArray(data.attendance) ? data.attendance : [];
+    attendanceRows = rows;
+    summary.textContent = `Total records: ${rows.length} (Last updated: ${new Date().toLocaleTimeString()})`;
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+    tbody.innerHTML = rows.map((row, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${escapeHtml(row.studentId)}</td>
+        <td>${escapeHtml(row.barcode || '--')}</td>
+        <td>${escapeHtml(row.name)}</td>
+        <td>${escapeHtml(row.date || '--')}</td>
+        <td>${escapeHtml(row.timeIn || '--')}</td>
+        <td>${escapeHtml(row.timeOut || '--')}</td>
+        <td>${escapeHtml(row.lastAction || '--')}</td>
+        <td>${escapeHtml(row.status || '--')}</td>
+      </tr>
+    `).join('');
+
+  } catch (error) {
+    console.error("Fetch error:", error);
+    // Only show error message in table if we have no existing data to show
+    if (tbody.innerHTML.includes('Loading') || attendanceRows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="error">Error: ${escapeHtml(error.message)}</td></tr>`;
+    }
+    summary.textContent = 'Connection error. Retrying...';
+  }
+}
+
+function downloadAttendanceCSV() {
+  if (!attendanceRows.length) {
+    alert('No attendance records available to download.');
+    return;
+  }
+
+  const headers = ['No', 'Student ID', 'Barcode', 'Name', 'Date', 'Time In', 'Time Out', 'Last Action', 'Status'];
+  const csvRows = [headers.map(escapeCSV).join(',')];
+
+  attendanceRows.forEach((row, index) => {
+    csvRows.push([
+      index + 1,
+      row.studentId || '',
+      row.barcode || '',
+      row.name || '',
+      row.date || '',
+      row.timeIn || '',
+      row.timeOut || '',
+      row.lastAction || '',
+      row.status || ''
+    ].map(escapeCSV).join(','));
+  });
+
+  const csvContent = '\uFEFF' + csvRows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const now = new Date();
+  const fileName = `attendance_${now.toISOString().split('T')[0]}.csv`;
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Start auto-refresh cycle
+window.addEventListener('load', () => {
+  // Initial manual load
+  loadAttendance();
+
+  // Set up interval to refresh every 1 second (1000ms)
+  refreshTimer = setInterval(() => {
+    loadAttendance(true);
+  }, 1000);
+});
+</script>
+</body>
+</html>

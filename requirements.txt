@@ -1,0 +1,7 @@
+Flask
+flask-socketio
+mysql-connector-python
+pyserial
+opencv-python
+face-recognition
+numpy
